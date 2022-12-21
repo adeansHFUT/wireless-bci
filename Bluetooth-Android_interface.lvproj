@@ -13,6 +13,7 @@
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
 		<Item Name="BT-Android_interface.lvlib" Type="Library" URL="../BT-Android_AE_library/BT-Android_interface.lvlib"/>
 		<Item Name="MAIN_test.vi" Type="VI" URL="../MAIN_test.vi"/>
+		<Item Name="find_check_point.vi" Type="VI" URL="../find_check_point.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="VISA Configure Serial Port (Serial Instr).vi" Type="VI" URL="/&lt;vilib&gt;/Instr/_visa.llb/VISA Configure Serial Port (Serial Instr).vi"/>
