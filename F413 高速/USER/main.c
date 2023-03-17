@@ -162,9 +162,10 @@ int main(void)
 				cnt=0;
 			}
 		 }
- 
 		}
-		if(sign10)
+		else
+			cnt = 0; //avoid store last cycle data after another call sign9
+		if(sign10)  // add intan character send function
 		{
 			int j = 0;
 			for(j = 0; j < 5; j++)

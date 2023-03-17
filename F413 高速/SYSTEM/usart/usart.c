@@ -166,26 +166,26 @@ void UART4_IRQHandler(void)                	//串口4中断服务程序
 		   Res == 58||Res == 59||Res == 60||Res == 61||Res == 62||Res == 63||Res == 64||
 		   Res == 65||Res == 66||Res == 67||Res == 68) //指令25...29,2A....2F...44：任选32通道之一 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;i=Res-37;sign5=1;sign6=0;sign7=0;sign8=0;sign9=0;} 
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=Res-37;sign5=1;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;} 
 				
 		if(Res == 71)// send fixed read only register(ascii INTAN)
 			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=1;}
 			
 		if(Res == 112) //指令70：采样32通道 + FFFF校验
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;sign10=0;}
 			
 		if(Res == 113) //指令71：循环采样35通道
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;sign10=0;}
 			
 		if(Res == 114) //指令72：采样电压通道 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=1;sign9=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=1;sign9=0;sign10=0;}
 			
 		if(Res == 115) //指令73：存SD卡 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;}
 				
 		if(Res == 120) //指令78：关闭 
 		
