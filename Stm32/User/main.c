@@ -100,6 +100,7 @@
 
 				extern u16 SPI_RX_BUFFER[1];	
         extern u16 SPI_TX_BUFFER[35];
+				extern u16 SPI_TX_intan[5];
 u8 flag = 0;
 extern int cnt_count;
 volatile long int block_num=9000;
@@ -155,7 +156,7 @@ int main(void)
 	UINT bw;
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(168);      //初始化延时函数
-  uart_init(921600);
+  uart_init(57600);
 //	SPI1_Init();
 		SPI1_Init(x); //SPI_BaudRatePrescaler_2         ((uint16_t)0x0000) 
 								//SPI_BaudRatePrescaler_4         ((uint16_t)0x0008)10进制 8  总采样率20K
@@ -1006,7 +1007,21 @@ int main(void)
 				
 			}
 		}
-	}		
+	}
+	if(sign10)
+	{
+		int j = 0;
+		for(j = 0; j < 5; j++)
+		{
+			SPI_CS_LOW();
+			
+			SPI_SendHalfWord(SPI_TX_intan[j]);
+
+			SPI_CS_HIGH();
+			
+			Usart_SendHalfWord(USART1,SPI_I2S_ReceiveData(SPI1));
+		}
+	}
 			
 }
 }

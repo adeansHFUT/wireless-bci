@@ -274,6 +274,9 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 				
 		if(Res == 70)//指令46：打开34通道
 			{sign45=1;sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;}
+				
+		if(Res == 71)// send fixed read only register(ascii INTAN)
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=1;}
 			
 		if(Res == 112) //指令70：采样32通道 + FFFF校验
 		
