@@ -20,6 +20,7 @@
 				 u8 sign7= 0;
 				 u8 sign8= 0;
          u8 sign9= 0;
+				 u8 sign10 = 0;
 				 u16 x = 0x0000;//SPI_BaudRatePrescaler_2         ((uint16_t)0x0000) 总采样率20K
 								        //SPI_BaudRatePrescaler_4         ((uint16_t)0x0008) 总采样率10K
 												//SPI_BaudRatePrescaler_8         ((uint16_t)0x0010) 总采样率5K
@@ -30,6 +31,7 @@
 												//SPI_BaudRatePrescaler_256       ((uint16_t)0x0038) 总采样率0.15625K
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
+				 extern u16 SPI_TX_intan[5]; //AScii intan
 
          volatile long int block_num=100;
 
@@ -160,8 +162,24 @@ int main(void)
 				cnt=0;
 			}
 		 }
- 
-		}   
+		}
+		else
+			cnt = 0; //avoid store last cycle data after another call sign9
+		
+	if(sign10)  // add intan character send function
+		{
+				int j = 0;
+				for(j = 0; j < 5; j++)
+				{
+					SPI_CS_LOW();
+					
+					SPI_SendHalfWord(SPI_TX_intan[j]);
+
+					SPI_CS_HIGH();
+					
+					Usart_SendHalfWord(UART4,SPI_I2S_ReceiveData(SPI1));
+				}
+		}		
 }
 
 }
