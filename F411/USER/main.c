@@ -21,14 +21,8 @@
 				 u8 sign8= 0;
          u8 sign9= 0;
 				 u8 sign10 = 0;
-				 u16 x = 0x0000;//SPI_BaudRatePrescaler_2         ((uint16_t)0x0000) 总采样率20K
-								        //SPI_BaudRatePrescaler_4         ((uint16_t)0x0008) 总采样率10K
-												//SPI_BaudRatePrescaler_8         ((uint16_t)0x0010) 总采样率5K
-												//SPI_BaudRatePrescaler_16        ((uint16_t)0x0018) 总采样率2.5K
-												//SPI_BaudRatePrescaler_32        ((uint16_t)0x0020) 总采样率1.25K
-												//SPI_BaudRatePrescaler_64        ((uint16_t)0x0028) 总采样率0.625K
-												//SPI_BaudRatePrescaler_128       ((uint16_t)0x0030) 总采样率0.3125K
-												//SPI_BaudRatePrescaler_256       ((uint16_t)0x0038) 总采样率0.15625K
+				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
+
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
 				 extern u16 SPI_TX_intan[5]; //AScii intan
@@ -46,14 +40,19 @@ int main(void)
   uint16_t tmpbuf1[4096];
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
-	uart_init(460800);		//初始化串口波特率为115200
+	uart_init(230400);		//初始化串口波特率为115200
 	SPI1_Init(x);
-
-	my_mem_init(SRAMIN);		//初始化内部内存池 
-	my_mem_init(SRAMCCM);		//初始化CCM内存池
+	delay_ms(3000); // delay for ble to connect automatically
+	Usart_SendHalfWord(USART6,0x1234); // log
+	
+	//my_mem_init(SRAMIN);		//初始化内部内存池 
+	//my_mem_init(SRAMCCM);		//初始化CCM内存池
 		   
  	while(SD_Init())//检测不到SD卡
-	{}
+	{
+		Usart_SendHalfWord(USART6,0x1122);
+		delay_ms(500);
+	}
 		
 	delay_ms(1000);
 		
@@ -177,7 +176,7 @@ int main(void)
 
 					SPI_CS_HIGH();
 					
-					Usart_SendHalfWord(UART4,SPI_I2S_ReceiveData(SPI1));
+					Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
 				}
 		}		
 }

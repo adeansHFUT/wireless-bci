@@ -1,0 +1,9 @@
+
+安卓苹果HJBLE测试源码
+	https://github.com/diaoerlangdang/HJBleDemo
+
+uniapp的HJBLE测试源码
+	https://github.com/diaoerlangdang/HJBle-uniapp
+
+微信小程序测试源码
+	https://github.com/diaoerlangdang/wechat-BleDemo
