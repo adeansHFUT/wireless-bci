@@ -122,7 +122,7 @@ void Usart_SendHalfWord( USART_TypeDef * pUSARTx, uint16_t ch)
 	/* 取出高八位 */
 	temp_h = (ch&0XFF00)>>8;
 	/* 取出低八位 */
-	temp_l = ch&0XFF;
+	temp_l = ch&0X00FF;
 	
 	/* 发送高八位 */
 	USART_SendData(pUSARTx,temp_h);	
@@ -169,27 +169,30 @@ void USART6_IRQHandler(void)                	//串口4中断服务程序
 			{sign1=0;sign2=0;sign3=0;sign4=0;i=Res-37;sign5=1;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;} 
 		
 		if(Res == 71)// hex:47 send fixed read only register(ascii INTAN)
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=1;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=1;sign11=0;}
+		
+		if(Res == 72)// send constant
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=1;}
 			
 		if(Res == 112) //指令70：采样32通道 + FFFF校验
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;sign10=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;}
 			
 		if(Res == 113) //指令71：循环采样35通道
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;sign10=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;sign10=0;sign11=0;}
 			
 		if(Res == 114) //指令72：采样电压通道 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=1;sign9=0;sign10=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=1;sign9=0;sign10=0;sign11=0;}
 			
 		if(Res == 115) //指令73：存SD卡 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;sign11=0;}
 				
 		if(Res == 120) //指令78：关闭 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=0;sign10=0;Usart_SendHalfWord(USART6,5555);}				
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;}				
   } 
 #if SYSTEM_SUPPORT_OS 	//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
 	OSIntExit();  											 

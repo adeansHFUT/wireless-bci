@@ -21,6 +21,7 @@
 				 u8 sign8= 0;
          u8 sign9= 0;
 				 u8 sign10 = 0;
+				 u8 sign11 = 0;
 				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
 
 		     extern u16 SPI_RX_BUFFER[1];	
@@ -40,7 +41,7 @@ int main(void)
   uint16_t tmpbuf1[4096];
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
-	uart_init(230400);		//初始化串口波特率为115200
+	uart_init(1000000);		//初始化串口波特率为115200
 	SPI1_Init(x);
 	delay_ms(3000); // delay for ble to connect automatically
 	Usart_SendHalfWord(USART6,0x1234); // log
@@ -111,6 +112,8 @@ int main(void)
 			if(i==32)
 		{ 
 			Usart_SendHalfWord(USART6,0xFFFF);
+			Usart_SendHalfWord(USART6,0xFFFF);
+			Usart_SendHalfWord(USART6,0xFFFF);
 			i=0;
 		}		
 		}
@@ -152,6 +155,7 @@ int main(void)
 			SPI_CS_HIGH();
 			
 			tmpbuf1[cnt] = SPI_I2S_ReceiveData(SPI1);
+			Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
 
 			cnt++;
 			if(cnt == 4096)
@@ -178,7 +182,18 @@ int main(void)
 					
 					Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
 				}
-		}		
+		}
+		if(sign11) 
+		{
+			unsigned int m = 0;
+			for(m = 0; m < 30000; m++)
+			{
+				//tmpbuf1[cnt] = m;
+				Usart_SendHalfWord(USART6, m);
+			}
+				
+		}
+		
 }
 
 }
