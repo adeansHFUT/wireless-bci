@@ -41,17 +41,17 @@ int main(void)
   uint16_t tmpbuf1[4096];
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
-	uart_init(1000000);		//初始化串口波特率为115200
+	uart_init(230400);		//初始化串口波特率为115200
 	SPI1_Init(x);
-	delay_ms(3000); // delay for ble to connect automatically
-	Usart_SendHalfWord(USART6,0x1234); // log
+	delay_ms(1000); // delay for ble to connect automatically
+	//Usart_SendHalfWord(USART6,0x1234); // log
 	
-	//my_mem_init(SRAMIN);		//初始化内部内存池 
+	my_mem_init(SRAMIN);		//初始化内部内存池 
 	//my_mem_init(SRAMCCM);		//初始化CCM内存池
 		   
  	while(SD_Init())//检测不到SD卡
 	{
-		Usart_SendHalfWord(USART6,0x1122);
+		//Usart_SendHalfWord(USART6,0x1122);
 		delay_ms(500);
 	}
 		
@@ -185,11 +185,18 @@ int main(void)
 		}
 		if(sign11) 
 		{
-			unsigned int m = 0;
-			for(m = 0; m < 30000; m++)
+			uint16_t m = 0;
+			for(m = 0; m < 65535; m++)
 			{
 				//tmpbuf1[cnt] = m;
 				Usart_SendHalfWord(USART6, m);
+				//cnt++;
+				//if(cnt == 4096)
+				//{
+					//SD_WriteDisk((u8*)tmpbuf1,block_num,16);
+					//block_num = block_num+16;			
+					//cnt=0;
+				//}
 			}
 				
 		}
