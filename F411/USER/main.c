@@ -41,7 +41,7 @@ int main(void)
   uint16_t tmpbuf1[4096];
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
-	uart_init(230400);		//初始化串口波特率为115200
+	uart_init(460800);		//初始化串口波特率为115200
 	SPI1_Init(x);
 	delay_ms(1000); // delay for ble to connect automatically
 	//Usart_SendHalfWord(USART6,0x1234); // log
