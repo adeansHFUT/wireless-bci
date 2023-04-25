@@ -1,5 +1,7 @@
 #include "sys.h"
 #include "usart.h"	
+#include "string.h"
+#define BUFFER_SIZE 64
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -66,8 +68,117 @@ u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //bit14，	接收到0x0d
 //bit13~0，	接收到的有效字节数目
 u16 USART_RX_STA=0;       //接收状态标记	
+uint16_t tmpbuf_rev[BLOCK_DMA_NUM][BLOCK_DMA_SIZE]; // static mem for dma send
+uint8_t rx_buffer[BUFFER_SIZE];  // dma receive
+volatile uint32_t rx_index = 0;  // dma receive size  
 
-//初始化IO 串口1 
+void init_uart(u32 bound) {
+    // ??GPIOA??
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+    // ??GPIOA pin11?pin12?????
+    GPIO_InitTypeDef gpio_init;
+    GPIO_StructInit(&gpio_init);
+    gpio_init.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
+    gpio_init.GPIO_Mode = GPIO_Mode_AF;
+    gpio_init.GPIO_OType = GPIO_OType_PP;
+    gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
+    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &gpio_init);
+
+    // ??USART6
+    USART_InitTypeDef usart_init;
+    USART_StructInit(&usart_init);
+    usart_init.USART_BaudRate = bound;
+    usart_init.USART_WordLength = USART_WordLength_8b;
+    usart_init.USART_StopBits = USART_StopBits_1;
+    usart_init.USART_Parity = USART_Parity_No;
+    usart_init.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    usart_init.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(USART6, &usart_init);
+
+    // ??USART6????
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_USART6);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_USART6);
+
+    // ??USART6
+    USART_Cmd(USART6, ENABLE);
+}
+void init_dma() {
+    // ??DMA2??
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+
+    // ??DMA2_Stream6,??USART6??? for send
+    DMA_InitTypeDef dma_init;
+    DMA_StructInit(&dma_init);
+    dma_init.DMA_Channel = DMA_Channel_5;
+    dma_init.DMA_PeripheralBaseAddr = (uint32_t)&(USART6->DR);
+    dma_init.DMA_Memory0BaseAddr = (uint32_t)tmpbuf_rev[0];   // first mem block , can change it later
+    dma_init.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    dma_init.DMA_BufferSize = BLOCK_DMA_SIZE;
+    dma_init.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    dma_init.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    dma_init.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    dma_init.DMA_Mode = DMA_Mode_Normal;
+    dma_init.DMA_Priority = DMA_Priority_High;
+    dma_init.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    dma_init.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+    DMA_Init(DMA2_Stream6, &dma_init);
+
+    // ??DMA2_Stream1,??USART6??? for receive
+    DMA_StructInit(&dma_init);
+    dma_init.DMA_Channel = DMA_Channel_5;
+    dma_init.DMA_PeripheralBaseAddr = (uint32_t)&(USART6->DR);
+		dma_init.DMA_Memory0BaseAddr = (uint32_t)rx_buffer;
+		dma_init.DMA_DIR = DMA_DIR_PeripheralToMemory;
+		dma_init.DMA_BufferSize = BUFFER_SIZE;
+		dma_init.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+		dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
+		dma_init.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+		dma_init.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+		dma_init.DMA_Mode = DMA_Mode_Normal;
+		dma_init.DMA_Priority = DMA_Priority_High;
+		dma_init.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+		dma_init.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+		DMA_Init(DMA2_Stream1, &dma_init);
+		
+		// ??DMA2_Stream6??
+		DMA_ITConfig(DMA2_Stream6, DMA_IT_TC, ENABLE);
+		NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+
+		// ??DMA2_Stream1??
+		DMA_ITConfig(DMA2_Stream1, DMA_IT_TC, ENABLE);
+		NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+}
+
+void send_data(const uint8_t* data, uint32_t length) {
+	// ?????????
+		if(DMA_GetFlagStatus(DMA2_Stream6, DMA_FLAG_TCIF6) == RESET)
+				return;// return error
+		
+
+		// ??DMA2_Stream6????
+		DMA_Cmd(DMA2_Stream6, DISABLE);
+		DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_FEIF6);   // maybe no need
+    DMA_MemoryTargetConfig(DMA2_Stream6, (uint32_t)data, DMA_Memory_0);
+		DMA_SetCurrDataCounter(DMA2_Stream6, length);
+		DMA_Cmd(DMA2_Stream6, ENABLE);
+}
+void DMA2_Stream1_IRQHandler() {
+	
+		if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TCIF1) != RESET) {
+			DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_TCIF1);
+
+    rx_index = BUFFER_SIZE - DMA_GetCurrDataCounter(DMA2_Stream1);
+    //handle below
+			
+    memset(rx_buffer, 0, BUFFER_SIZE); 
+    // ????DMA2_Stream1????
+    DMA_Cmd(DMA2_Stream1, ENABLE);
+}
+}
+
 //bound:波特率
 void uart_init(u32 bound){
    //GPIO端口设置
@@ -76,7 +187,7 @@ void uart_init(u32 bound){
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); //使能GPIOA时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6,ENABLE);//使能UART5时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6,ENABLE);//使能UART6时钟
  
 	//串口1对应引脚复用映射
 	GPIO_PinAFConfig(GPIOA,GPIO_PinSource11,GPIO_AF_USART6); //GPIOA9复用为UART5
@@ -95,7 +206,7 @@ void uart_init(u32 bound){
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
 	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_RTS_CTS;//无硬件数据流控制
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
   USART_Init(USART6, &USART_InitStructure); //初始化串口1
 	
@@ -173,6 +284,15 @@ void USART6_IRQHandler(void)                	//串口4中断服务程序
 		
 		if(Res == 72)// send constant
 			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=1;}
+				
+		if(Res == 73)// cs delay++
+			{intan_cs_delay++;}
+		
+		if(Res == 74)// cs delay--
+			{intan_cs_delay--;}
+
+		if(Res == 75)
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;sign12=1;}
 			
 		if(Res == 112) //指令70：采样32通道 + FFFF校验
 		

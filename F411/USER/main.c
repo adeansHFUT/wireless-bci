@@ -10,6 +10,8 @@
 //淘宝店铺：http://eboard.taobao.com
 //广州市星翼电子科技有限公司    
 //作者：正点原子 @ALIENTEK 
+
+
          int i = 0 ;
 				 u8 sign1= 0;
 				 u8 sign2= 0;
@@ -22,7 +24,11 @@
          u8 sign9= 0;
 				 u8 sign10 = 0;
 				 u8 sign11 = 0;
+				 u8 sign12 = 0;
 				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
+				 u8 intan_cs_delay = 5;
+				 uint16_t tmpbuf1[4096]; // for sd write
+
 
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
@@ -35,10 +41,13 @@
 int main(void)
 {        
 			 
-	int cnt=0;
+	int cnt=0; // for write sd
+	int block_intan_cnt = 0;
+	int block_dma_cnt = 0;
+	int intan_cnt = 0; // for intan write
 	u8 t=0;	
 	u8 *buf;
-  uint16_t tmpbuf1[4096];
+  
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
 	uart_init(460800);		//初始化串口波特率为115200
@@ -56,7 +65,6 @@ int main(void)
 	}
 		
 	delay_ms(1000);
-		
  
 
 	while(1)
@@ -99,23 +107,20 @@ int main(void)
 		}
 		 if(sign6)
 		{
-			for (i=0;i<32;i++)
-		{
-			SPI_CS_LOW();
-			
-			SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+				for (i=0;i<32;i++)
+				{
+					SPI_CS_LOW();
+					
+					SPI_SendHalfWord(SPI_TX_BUFFER[i]);
 
-			SPI_CS_HIGH();
-			
-			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
-		}
-			if(i==32)
-		{ 
-			Usart_SendHalfWord(USART6,0xFFFF);
-			Usart_SendHalfWord(USART6,0xFFFF);
-			Usart_SendHalfWord(USART6,0xFFFF);
-			i=0;
-		}		
+					SPI_CS_HIGH();
+					
+					Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
+				}
+				Usart_SendHalfWord(USART6,0xFFFF);
+				Usart_SendHalfWord(USART6,0xFFFF);
+				Usart_SendHalfWord(USART6,0xFFFF);
+				i=0;
 		}
 		
 			if(sign7)
@@ -155,7 +160,7 @@ int main(void)
 			SPI_CS_HIGH();
 			
 			tmpbuf1[cnt] = SPI_I2S_ReceiveData(SPI1);
-			Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
+			//Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
 
 			cnt++;
 			if(cnt == 4096)
@@ -199,6 +204,28 @@ int main(void)
 				//}
 			}
 				
+		}
+		if(sign12)   // DMA to uart
+		{
+			for (i=0;i<35;i++)
+		 {
+					
+			SPI_CS_LOW();
+ 
+			SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+
+			SPI_CS_HIGH();
+			
+			tmpbuf_rev[block_intan_cnt][intan_cnt] = SPI_I2S_ReceiveData(SPI1);
+			delay_us(intan_cs_delay); // influence Sample rate
+			intan_cnt++;
+			if(intan_cnt == BLOCK_DMA_SIZE)
+			{
+				// DMA transport start
+				block_intan_cnt = (block_intan_cnt + 1)%BLOCK_DMA_NUM;
+				intan_cnt=0;
+			}
+		 }
 		}
 		
 }
