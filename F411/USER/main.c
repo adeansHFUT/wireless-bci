@@ -50,7 +50,10 @@ int main(void)
   
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
-	uart_init(460800);		//初始化串口波特率为115200
+	//uart_init(460800);		//初始化串口波特率为115200
+	USART6_Configuration(460800);
+	USART6_DMA_Tx_Configuration();
+	USART6_DMA_Rx_Configuration();
 	SPI1_Init(x);
 	delay_ms(1000); // delay for ble to connect automatically
 	//Usart_SendHalfWord(USART6,0x1234); // log
@@ -219,10 +222,10 @@ int main(void)
 			tmpbuf_rev[block_intan_cnt][intan_cnt] = SPI_I2S_ReceiveData(SPI1);
 			delay_us(intan_cs_delay); // influence Sample rate
 			intan_cnt++;
-			if(intan_cnt == BLOCK_DMA_SIZE)
+			if(intan_cnt == BLOCK_DMA_SIZE_TX)
 			{
-				// DMA transport start
-				block_intan_cnt = (block_intan_cnt + 1)%BLOCK_DMA_NUM;
+				DMA_send_data(&tmpbuf_rev[block_intan_cnt][0], BLOCK_DMA_SIZE_TX);// DMA transport start
+				block_intan_cnt = (block_intan_cnt + 1)%BLOCK_DMA_NUM_TX;
 				intan_cnt=0;
 			}
 		 }
