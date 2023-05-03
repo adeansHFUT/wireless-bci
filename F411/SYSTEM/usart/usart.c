@@ -68,7 +68,7 @@ u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //bit13~0，	接收到的有效字节数目
 u16 USART_RX_STA=0;       //接收状态标记	
 uint16_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma send
-uint8_t rx_buffer[BUFFER_SIZE_RX];  // dma receive
+char rx_buffer[BUFFER_SIZE_RX];  // dma receive
 volatile uint32_t rx_index = 0;  // dma receive size  
 
 
@@ -109,6 +109,7 @@ void USART6_DMA_Rx_Configuration(void)
 	while (DMA_GetCmdStatus(DMA2_Stream1) != DISABLE);						//??DMA???  
 	DMA_InitStructure.DMA_Channel = DMA_Channel_5;  						//????
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&USART6->DR;		//DMA????
+	memset(rx_buffer, 0, BUFFER_SIZE_RX); // set to zero
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)rx_buffer;	//??????
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory ;				//DMA????:????????:??--->??
 	DMA_InitStructure.DMA_BufferSize = BUFFER_SIZE_RX;		//???? 
@@ -180,18 +181,19 @@ void USART6_Configuration(uint16_t bound)
 }
 
 
-void DMA_send_data(const uint16_t* data, uint32_t length) {
+u8 DMA_send_data(const uint16_t* data, uint32_t length) {
 
-		if(DMA_GetFlagStatus(DMA2_Stream6, DMA_FLAG_TCIF6) == RESET)
-				return;// return error
+		if(DMA_GetFlagStatus(DMA2_Stream6, DMA_FLAG_TCIF6) == RESET)  // if status is 0, transfer is not complte
+				return 0;// return error because last DMA transfer is not finish yet
 		
 
 		// ??DMA2_Stream6????
 		DMA_Cmd(DMA2_Stream6, DISABLE);
-		DMA_ClearFlag(DMA1_Stream6, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_FEIF6);   // maybe no need
+		DMA_ClearFlag(DMA2_Stream6, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_FEIF6);   // maybe no need
     DMA_MemoryTargetConfig(DMA2_Stream6, (uint32_t)data, DMA_Memory_0);
 		DMA_SetCurrDataCounter(DMA2_Stream6, length);
 		DMA_Cmd(DMA2_Stream6, ENABLE);
+		return 1;
 }
 
 void USART6_IRQHandler(void)
@@ -206,9 +208,32 @@ void USART6_IRQHandler(void)
 		DMA_Cmd(DMA2_Stream1 , DISABLE); 					// disable DMA
 		DMA_ClearFlag(DMA2_Stream1 , DMA_FLAG_TCIF1 | DMA_FLAG_FEIF1 | DMA_FLAG_DMEIF1 | DMA_FLAG_TEIF1 | DMA_FLAG_HTIF1);//?????
 		ch = BUFFER_SIZE_RX - DMA_GetCurrDataCounter(DMA2_Stream1);
-		if (ch > 0)
+		if (ch > 0) // handle string in rx_buffer
 		{
-			// handle 
+			if(strcmp(rx_buffer, "S_i") == 0) // send INTAN
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=1;sign11=0;sign12=0;}
+					
+			else if(strcmp(rx_buffer, "C_+") == 0)	// control delay 
+			  {intan_cs_delay++;}
+					
+			else if(strcmp(rx_buffer, "C_-") == 0)	// control delay 
+			  {intan_cs_delay--;}
+				
+			else if(strcmp(rx_buffer, "S_dma32") == 0)	// send 32 by dma
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;sign12=1;}	
+					
+			else if(strcmp(rx_buffer, "S_c") == 0)	// send constant
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=1;sign12=0;}	
+				
+			else if(strcmp(rx_buffer, "S_32") == 0) // send 32 channels
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;sign10=0;sign11=0;sign12=0;}
+					
+			else if(strcmp(rx_buffer, "store") == 0) // store sd
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;sign11=0;sign12=0;}
+					
+			else if(strcmp(rx_buffer, "pause") == 0) // pause
+				{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;sign12=0;}		
+					
 			memset(rx_buffer, 0, BUFFER_SIZE_RX); // set to zero
 		}
 		DMA_SetCurrDataCounter(DMA2_Stream1 , BUFFER_SIZE_RX);

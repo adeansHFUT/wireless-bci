@@ -26,7 +26,7 @@
 				 u8 sign11 = 0;
 				 u8 sign12 = 0;
 				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
-				 u8 intan_cs_delay = 5;
+				 u16 intan_cs_delay = 5;
 				 uint16_t tmpbuf1[4096]; // for sd write
 
 
@@ -58,7 +58,7 @@ int main(void)
 	delay_ms(1000); // delay for ble to connect automatically
 	//Usart_SendHalfWord(USART6,0x1234); // log
 	
-	my_mem_init(SRAMIN);		//初始化内部内存池 
+	//my_mem_init(SRAMIN);		//初始化内部内存池 
 	//my_mem_init(SRAMCCM);		//初始化CCM内存池
 		   
  	while(SD_Init())//检测不到SD卡
@@ -210,6 +210,8 @@ int main(void)
 		}
 		if(sign12)   // DMA to uart
 		{
+			u8 last_send_complete = 0;
+			
 			for (i=0;i<35;i++)
 		 {
 					
@@ -224,9 +226,18 @@ int main(void)
 			intan_cnt++;
 			if(intan_cnt == BLOCK_DMA_SIZE_TX)
 			{
-				DMA_send_data(&tmpbuf_rev[block_intan_cnt][0], BLOCK_DMA_SIZE_TX);// DMA transport start
-				block_intan_cnt = (block_intan_cnt + 1)%BLOCK_DMA_NUM_TX;
-				intan_cnt=0;
+				last_send_complete =  DMA_send_data(&tmpbuf_rev[block_intan_cnt][0], BLOCK_DMA_SIZE_TX);// DMA transport start
+				if(last_send_complete == 1){
+					block_intan_cnt = (block_intan_cnt + 1)%BLOCK_DMA_NUM_TX;
+					intan_cnt=0;
+				}
+				else{
+					memset(&tmpbuf_rev[0][0], 12, BLOCK_DMA_SIZE_TX);
+					while(1)
+						DMA_send_data(&tmpbuf_rev[0][0], BLOCK_DMA_SIZE_TX);// report ERROR
+					
+				}
+				
 			}
 		 }
 		}

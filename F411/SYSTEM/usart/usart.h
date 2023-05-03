@@ -29,10 +29,11 @@
 #define USART_REC_LEN  			200  	//定义最大接收字节数 200
 #define EN_USART1_RX 			1		//使能（1）/禁止（0）串口1接收
 #define BLOCK_DMA_NUM_TX 2  // block for dma_to_uart
-#define BLOCK_DMA_SIZE_TX 10 // dma send buffer
-#define BUFFER_SIZE_RX 64  // dma receive buffer
+#define BLOCK_DMA_SIZE_TX 700 // dma send buffer
+#define BUFFER_SIZE_RX 250  // dma receive buffer
 extern u8 sign1,sign2,sign3,sign4,sign5,sign6,sign7,sign8,sign9,sign10, sign11, sign12;
-extern u8 intan_cs_delay;
+extern int i;
+extern u16 intan_cs_delay;
 extern u8  USART_RX_BUF[USART_REC_LEN]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern u16 USART_RX_STA;         		//接收状态标记	
 extern uint16_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma TX
@@ -44,7 +45,7 @@ void Usart_SendString( USART_TypeDef * pUSARTx, char *str);
 void USART6_DMA_Tx_Configuration(void);
 void USART6_DMA_Rx_Configuration(void);
 void USART6_Configuration(uint16_t bound);
-void DMA_send_data(const uint16_t* data, uint32_t length);
+u8 DMA_send_data(const uint16_t* data, uint32_t length);
 #endif
 
 
