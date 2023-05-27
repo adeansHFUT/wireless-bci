@@ -36,7 +36,7 @@ extern int i;
 extern u16 intan_cs_delay;
 extern u8  USART_RX_BUF[USART_REC_LEN]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern u16 USART_RX_STA;         		//接收状态标记	
-extern uint16_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma TX
+extern uint8_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma TX
 //如果想串口中断接收，请不要注释以下宏定义
 void uart_init(u32 bound);
 void Usart_SendHalfWord( USART_TypeDef * pUSARTx, uint16_t ch);
@@ -45,7 +45,7 @@ void Usart_SendString( USART_TypeDef * pUSARTx, char *str);
 void USART6_DMA_Tx_Configuration(void);
 void USART6_DMA_Rx_Configuration(void);
 void USART6_Configuration(uint16_t bound);
-u8 DMA_send_data(const uint16_t* data, uint32_t length);
+u8 DMA_send_data(const uint8_t* data, uint32_t length);
 #endif
 
 

@@ -67,7 +67,7 @@ int main(void)
 		delay_ms(500);
 	}
 		
-	delay_ms(1000);
+	delay_ms(500);
  
 
 	while(1)
@@ -128,16 +128,16 @@ int main(void)
 		
 			if(sign7)
 		{
-			for (i=0;i<35;i++)
-		{
-			SPI_CS_LOW();
-			
-			SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+				for (i=0;i<35;i++)
+			{
+				SPI_CS_LOW();
+				
+				SPI_SendHalfWord(SPI_TX_BUFFER[i]);
 
-			SPI_CS_HIGH();
-			
-			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
-		}
+				SPI_CS_HIGH();
+				
+				Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
+			}
 	  }
 			
 		 if(sign8)
@@ -240,6 +240,15 @@ int main(void)
 				
 			}
 		 }
+		}
+		if(1)
+		{
+			int te2,te1;
+			for(te2 = 0; te2 < 2; te2++)
+				for(te1 = 0; te1 < BLOCK_DMA_SIZE_TX; te1++)
+					tmpbuf_rev[te2][te1] = te1;
+			while(1)
+				DMA_send_data(&tmpbuf_rev[0][0], BLOCK_DMA_SIZE_TX*2);
 		}
 		
 }

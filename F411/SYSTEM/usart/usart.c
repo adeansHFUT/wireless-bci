@@ -67,7 +67,7 @@ u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //bit14，	接收到0x0d
 //bit13~0，	接收到的有效字节数目
 u16 USART_RX_STA=0;       //接收状态标记	
-uint16_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma send
+uint8_t tmpbuf_rev[BLOCK_DMA_NUM_TX][BLOCK_DMA_SIZE_TX]; // static mem for dma send
 char rx_buffer[BUFFER_SIZE_RX];  // dma receive
 volatile uint32_t rx_index = 0;  // dma receive size  
 
@@ -78,25 +78,28 @@ void USART6_DMA_Tx_Configuration(void)  //  DMA Tx configuration
 	
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);				//DMA1????
-	DMA_DeInit(DMA2_Stream6);
-	while (DMA_GetCmdStatus(DMA2_Stream6) != DISABLE);						//??DMA???
+	DMA_DeInit(DMA2_Stream7);
+	while (DMA_GetCmdStatus(DMA2_Stream7) != DISABLE);						//??DMA???
 	DMA_InitStructure.DMA_Channel = DMA_Channel_5; 							//DMA????
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&USART6->DR;		//DMA????
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(USART6->DR);		//DMA????
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&tmpbuf_rev[0][0];	//??????
 	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;					//DMA????:??--->??
 	DMA_InitStructure.DMA_BufferSize = BLOCK_DMA_SIZE_TX;		//????????
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;		//???????
 	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;					//???????
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;	//set memory data size = 8bit
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;			//set memory data size = 16bit
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;			//set memory data size = 16bit
 	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;							//?????? 
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;					//????? DMA_Priority_High
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;         
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
 	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;				//?????????
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;		//????????
-	DMA_Init(DMA2_Stream6, &DMA_InitStructure);								//???DMA Stream
-	DMA_Cmd(DMA2_Stream6, DISABLE); 										//??DMA??
+	DMA_Init(DMA2_Stream7, &DMA_InitStructure);								//???DMA Stream
+	DMA_ClearFlag(DMA2_Stream7, DMA_FLAG_TCIF7 | DMA_FLAG_HTIF7 | DMA_FLAG_TEIF7 | DMA_FLAG_FEIF7);
+	
+	DMA_Cmd(DMA2_Stream7, DISABLE); 										//??DMA??
+
 
 }
 void USART6_DMA_Rx_Configuration(void)
@@ -125,6 +128,7 @@ void USART6_DMA_Rx_Configuration(void)
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;		//????????
 	DMA_Init(DMA2_Stream1 , &DMA_InitStructure);							//???DMA_Stream	
 	DMA_Cmd(DMA2_Stream1, ENABLE);  										//??DMA??
+	while (DMA_GetCmdStatus(DMA2_Stream1) == DISABLE);
 }
 void USART6_Configuration(uint16_t bound)
 {
@@ -167,13 +171,13 @@ void USART6_Configuration(uint16_t bound)
 	
  // config usart IT
 	USART_ClearFlag(USART6, USART_FLAG_TC); //????????	
-	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);	//???????????????????(??:?????USART_Mode_Tx,???????????)
+	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == SET);	//???????????????????(??:?????USART_Mode_Tx,???????????)
 	USART_ClearFlag(USART6, USART_FLAG_TC);	//????????
  
   USART_ITConfig(USART6, USART_IT_RXNE, DISABLE);				//??USART1???????
 	USART_ITConfig(USART6, USART_IT_TXE, DISABLE);				//??USART1?????
 	USART_ITConfig(USART6, USART_IT_IDLE, ENABLE);				//??USART1???? 
-	USART_ITConfig(USART6, USART_IT_TC, ENABLE);				//??USART1?????? 
+	USART_ITConfig(USART6, USART_IT_TC, DISABLE);				//??USART1?????? 
 	
 	USART_DMACmd(USART6 ,   USART_DMAReq_Tx,ENABLE);  			//?????DMA??
 	USART_DMACmd(USART6 ,   USART_DMAReq_Rx,ENABLE);  			//?????DMA??
@@ -181,18 +185,23 @@ void USART6_Configuration(uint16_t bound)
 }
 
 
-u8 DMA_send_data(const uint16_t* data, uint32_t length) {
+u8 DMA_send_data(const uint8_t* data, uint32_t length) {
+	 
+		static uint8_t first_call = 1;
 
-		if(DMA_GetFlagStatus(DMA2_Stream6, DMA_FLAG_TCIF6) == RESET)  // if status is 0, transfer is not complte
+		if(first_call == 0 && DMA_GetFlagStatus(DMA2_Stream7, DMA_FLAG_TCIF7) == RESET)  // if status is 0, transfer is not complte
 				return 0;// return error because last DMA transfer is not finish yet
 		
 
-		// ??DMA2_Stream6????
-		DMA_Cmd(DMA2_Stream6, DISABLE);
-		DMA_ClearFlag(DMA2_Stream6, DMA_FLAG_TCIF6 | DMA_FLAG_HTIF6 | DMA_FLAG_TEIF6 | DMA_FLAG_FEIF6);   // maybe no need
-    DMA_MemoryTargetConfig(DMA2_Stream6, (uint32_t)data, DMA_Memory_0);
-		DMA_SetCurrDataCounter(DMA2_Stream6, length);
-		DMA_Cmd(DMA2_Stream6, ENABLE);
+		// ??DMA2_Stream7????
+		//DMA_Cmd(DMA2_Stream7, DISABLE);
+		while (DMA_GetCmdStatus(DMA2_Stream7) != DISABLE);
+    DMA_MemoryTargetConfig(DMA2_Stream7, (uint32_t)data, DMA_Memory_0);
+		DMA_SetCurrDataCounter(DMA2_Stream7, length);
+		DMA_ClearFlag(DMA2_Stream7, DMA_FLAG_TCIF7);   // maybe no need
+		DMA_Cmd(DMA2_Stream7, ENABLE); 
+		while (DMA_GetCmdStatus(DMA2_Stream7) == DISABLE);
+		first_call = 0;
 		return 1;
 }
 
@@ -237,7 +246,7 @@ void USART6_IRQHandler(void)
 			memset(rx_buffer, 0, BUFFER_SIZE_RX); // set to zero
 		}
 		DMA_SetCurrDataCounter(DMA2_Stream1 , BUFFER_SIZE_RX);
-		DMA_Cmd(DMA2_Stream1, ENABLE);  // enable DMA
+		                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // enable DMA
 	}
 }
 
