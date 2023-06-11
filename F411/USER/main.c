@@ -37,9 +37,11 @@ int main(void)
 {        
 			 
 	int cnt=0;
+	int count_bluetooth = 0;
 	u8 t=0;	
 	u8 *buf;
   uint16_t tmpbuf1[4096];
+	uint16_t tmpbuf2[32]; // for bluetooth send 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
 	uart_init(1000000);		//初始化串口波特率为115200
@@ -56,9 +58,8 @@ int main(void)
 		delay_ms(500);
 	}
 		
-	delay_ms(1000);
+	//delay_ms(1000);
 		
-  delay_time = 100;
 
 	while(1)
 	{
@@ -100,26 +101,25 @@ int main(void)
 		}
 		 if(sign6)
 		{
+				u8 j;
 				for (i=0;i<32;i++)
-			{
-				SPI_CS_LOW();
-				
-				SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+				{
+					SPI_CS_LOW();
+					
+					SPI_SendHalfWord(SPI_TX_BUFFER[i]);
 
-				SPI_CS_HIGH();
-				
-				Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
-				
-			}
-				if(i==32)
-			{ 
-				Usart_SendHalfWord(USART6,0xFFFF);
-				Usart_SendHalfWord(USART6,0xFFFF);
-				Usart_SendHalfWord(USART6,0xFFFF);
+					SPI_CS_HIGH();
+					
+					tmpbuf2[i] = SPI_I2S_ReceiveData(SPI1);
+				}
 
-				i=0;
-			}
-		delay_us(delay_time);		
+			for(j = 0; j < 32; j++ )
+				Usart_SendHalfWord(USART6, tmpbuf2[j]);
+			
+			Usart_SendHalfWord(USART6,0x1234);
+			//Usart_SendHalfWord(USART6,0x5678);
+			//Usart_SendHalfWord(USART6,0xFFFF);	
+			delay_us(200);
 		}
 		
 			if(sign7)
