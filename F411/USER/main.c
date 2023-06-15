@@ -45,7 +45,7 @@ int main(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
 	uart_init(1000000);		//初始化串口波特率为115200
-	SPI1_Init(x);
+	SPI1_Init(0x0000); 
 	delay_ms(1000); // delay for ble to connect automatically
 	//Usart_SendHalfWord(USART6,0x1234); // log
 	
@@ -60,7 +60,7 @@ int main(void)
 		
 	//delay_ms(1000);
 		
-
+	
 	while(1)
 	{
      if(sign1)
@@ -110,16 +110,23 @@ int main(void)
 
 					SPI_CS_HIGH();
 					
+					//Usart_SendHalfWord(USART6, SPI_I2S_ReceiveData(SPI1));
+					
 					tmpbuf2[i] = SPI_I2S_ReceiveData(SPI1);
+					
 				}
 
 			for(j = 0; j < 32; j++ )
-				Usart_SendHalfWord(USART6, tmpbuf2[j]);
+			{
+					Usart_SendHalfWord(USART6, tmpbuf2[j]);
+					delay_us(2);
+			}
+				
 			
 			Usart_SendHalfWord(USART6,0x1234);
 			//Usart_SendHalfWord(USART6,0x5678);
 			//Usart_SendHalfWord(USART6,0xFFFF);	
-			delay_us(200);
+			delay_us(50);
 		}
 		
 			if(sign7)
