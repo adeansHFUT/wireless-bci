@@ -119,14 +119,14 @@ int main(void)
 			for(j = 0; j < 32; j++ )
 			{
 					Usart_SendHalfWord(USART6, tmpbuf2[j]);
-					delay_us(2);
+					//delay_us(2);
 			}
 				
 			
 			Usart_SendHalfWord(USART6,0x1234);
 			//Usart_SendHalfWord(USART6,0x5678);
 			//Usart_SendHalfWord(USART6,0xFFFF);	
-			delay_us(50);
+			//delay_us(50);
 		}
 		
 			if(sign7)
