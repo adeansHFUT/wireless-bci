@@ -24,9 +24,11 @@
 				 u8 sign11 = 0;
 				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
 				 u16 delay_time = 100;
+				 u8 first_acquire_circle = 0;
 
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
+				 extern u16 SPI_TX_BUFFER_2[32];
 				 extern u16 SPI_TX_intan[5]; //AScii intan
 
          volatile long int block_num=100;
@@ -101,28 +103,39 @@ int main(void)
 		}
 		 if(sign6)
 		{
-				u8 j;
-				for (i=0;i<32;i++)
-				{
-					SPI_CS_LOW();
+			
+			u8 j;
+			
+			if(first_acquire_circle)  // discard the first two words 
+			{
+				SPI_CS_LOW();
+				SPI_SendHalfWord(CONVERT0);
+				SPI_CS_HIGH();
+				SPI_CS_LOW();
+				SPI_SendHalfWord(CONVERT1);
+				SPI_CS_HIGH();
+				first_acquire_circle = 0;
+			}
+						
+			for (i=0;i<32;i++)  // channels sended are from 0 to 31
+			{
+				SPI_CS_LOW();
 					
-					SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+				SPI_SendHalfWord(SPI_TX_BUFFER_2[i]);
 
-					SPI_CS_HIGH();
+				SPI_CS_HIGH();
 					
-					//Usart_SendHalfWord(USART6, SPI_I2S_ReceiveData(SPI1));
+				//Usart_SendHalfWord(USART6, SPI_I2S_ReceiveData(SPI1));
 					
-					tmpbuf2[i] = SPI_I2S_ReceiveData(SPI1);
-					
-				}
+				tmpbuf2[i] = SPI_I2S_ReceiveData(SPI1);
+			}
 
 			for(j = 0; j < 32; j++ )
 			{
-					Usart_SendHalfWord(USART6, tmpbuf2[j]);
-					//delay_us(2);
+				Usart_SendHalfWord(USART6, tmpbuf2[j]);
+				//delay_us(2);
 			}
 				
-			
 			Usart_SendHalfWord(USART6,0x1234);
 			//Usart_SendHalfWord(USART6,0x5678);
 			//Usart_SendHalfWord(USART6,0xFFFF);	

@@ -174,9 +174,9 @@ void USART6_IRQHandler(void)                	//串口4中断服务程序
 		if(Res == 72)// send constant
 			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=0;sign8=0;sign9=0;sign10=0;sign11=1;}
 			
-		if(Res == 112) //指令70：采样32通道 + FFFF校验
+		if(Res == 112) //指令70：采样32通道 + FF校验
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;i=0;sign5=0;sign6=1;sign7=0;sign8=0;sign9=0;sign10=0;sign11=0;first_acquire_circle = 1;}
 			
 		if(Res == 113) //指令71：循环采样35通道
 		
