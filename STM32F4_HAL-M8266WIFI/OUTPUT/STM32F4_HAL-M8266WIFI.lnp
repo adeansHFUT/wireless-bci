@@ -1,0 +1,26 @@
+--cpu=Cortex-M4.fp.sp
+".\output\startup_stm32f407xx.o"
+".\output\stm32f4xx_hal.o"
+".\output\stm32f4xx_hal_gpio.o"
+".\output\stm32f4xx_hal_pwr.o"
+".\output\stm32f4xx_hal_pwr_ex.o"
+".\output\stm32f4xx_hal_rcc.o"
+".\output\stm32f4xx_hal_cortex.o"
+".\output\stm32f4xx_hal_spi.o"
+".\output\stm32f4xx_hal_dma.o"
+".\output\stm32f4xx_hal_tim.o"
+".\output\stm32f4xx_hal_tim_ex.o"
+".\output\delay.o"
+".\output\sys.o"
+".\output\led.o"
+".\output\key.o"
+".\output\m8266hostif_stm32xx.o"
+".\M8266WIFI\M8266WIFIDrv_STM32F4xx.a"
+".\output\m8266wifi_ops.o"
+".\output\test_m8266wifi.o"
+".\output\system_stm32f4xx.o"
+".\output\main.o"
+--strict --scatter ".\OUTPUT\STM32F4_HAL-M8266WIFI.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\OUTPUT\STM32F4_HAL-M8266WIFI.map" -o .\OUTPUT\STM32F4_HAL-M8266WIFI.axf
