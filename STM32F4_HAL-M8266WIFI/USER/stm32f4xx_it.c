@@ -44,10 +44,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "stm32f4xx_hal.h"
+#include "M8266WIFIDrv.h"
+#include "M8266HostIf.h"
 
 #ifdef _RTE_
 #include "RTE_Components.h"             /* Component selection */
 #endif
+
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -166,12 +170,13 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-#ifndef RTE_CMSIS_RTOS_RTX
-void SysTick_Handler(void)
-{
-  HAL_IncTick();
-}
-#endif
+
+//#ifndef RTE_CMSIS_RTOS_RTX
+//void SysTick_Handler(void)
+//{
+//  HAL_IncTick();
+//}
+//#endif
 
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
@@ -188,7 +193,60 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+void ConfigureExternalInterrupt(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
 
+    // ??GPIOA??
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    // ??PA2?????,?????
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN; // ??:??????,?????????
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // ?????????
+    HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+
+    // ?????????
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+}
+
+uint8_t receive_size;
+uint8_t receive_sign;
+uint8_t receive_data, link_no;
+uint16_t status;
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_2)
+    {
+			if(M8266WIFI_SPI_Has_DataReceived())
+			{	
+				receive_size = M8266WIFI_SPI_RecvData(&receive_data, 1, 10,&link_no, &status);
+				if(receive_size!=0)
+				{
+					switch(receive_data)
+					{
+						case 112:
+							receive_sign = 1; // send 32 channels;
+							break;
+						case 120:
+							receive_sign = 0; // pause
+							break;
+						default:
+							break;
+					}
+				}
+						
+			}
+		}
+}
+void EXTI2_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
 
 /**
   * @}

@@ -26,7 +26,10 @@ u16 SPI_TX_BUFFER[35] =   {CONVERT0,CONVERT1,CONVERT2,CONVERT3,CONVERT4,CONVERT5
 					                      CONVERT8,CONVERT9,CONVERT10,CONVERT11,CONVERT12,CONVERT13,CONVERT14,CONVERT15,
 					                      CONVERT16,CONVERT17,CONVERT18,CONVERT19,CONVERT20,CONVERT21,CONVERT22,CONVERT23,CONVERT24,
 				                        CONVERT25,CONVERT26,CONVERT27,CONVERT28,CONVERT29,CONVERT30,CONVERT31,CONVERT32,CONVERT33,CONVERT34};
-
+uint16_t SPI_TX_BUFFER_2[32] = {CONVERT2,CONVERT3,CONVERT4,CONVERT5,CONVERT6,CONVERT7,
+					                      CONVERT8,CONVERT9,CONVERT10,CONVERT11,CONVERT12,CONVERT13,CONVERT14,CONVERT15,
+					                      CONVERT16,CONVERT17,CONVERT18,CONVERT19,CONVERT20,CONVERT21,CONVERT22,CONVERT23,CONVERT24,
+				                        CONVERT25,CONVERT26,CONVERT27,CONVERT28,CONVERT29,CONVERT30,CONVERT31,CONVERT0,CONVERT1};
 uint16_t SPI_TX_intan[5] = {0xe800, 0xe900, 0xea00, 0xeb00, 0xec00}; //AScii intan
 
 														
@@ -38,8 +41,8 @@ extern SPI_HandleTypeDef hspi2;
 
 void M8266WIFI_Test(void)
 {
-	 uint16_t status =0;
-	 uint8_t  link_no=0;
+	 extern uint16_t status;
+	 extern uint8_t link_no;
 
 #ifdef USE_LED_AND_KEY_FOR_TEST	
 	for(i=0; i<3; i++)   // Flash the Two LEDs 4 times in the Main Board to indicate we start test. not mandatory.
@@ -193,9 +196,8 @@ void M8266WIFI_Test(void)
 
 #if (TEST_M8266WIFI_TYPE==3)  // Echo test: to receive data from remote and then echo back to remote (Chinese: 收发测试，模组将接收到的数据立刻返回给发送方)
 {
-   uint16_t SPI_RX_BUFFER[SPI_RX_BUFFER_SIZE]; //定义接收数据的缓冲区
-	 uint16_t sent;
-   uint8_t data[2]={0,0}; //定义两个字节的空间来存放指令  初始化为0，0，所以wifi接收到的就是xx 00   
+	 extern uint8_t receive_sign;
+   uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460
 	 uint8_t send_data[5]= {0x10,0x11,0x12,0x13,0xFF};
 	 uint16_t test[1]={0x5555};
 	 uint16_t FFzhiling[1]={0xFFFF};
@@ -203,378 +205,27 @@ void M8266WIFI_Test(void)
 	 uint8_t chucun[2];
 while(1)
 {
-	 if(M8266WIFI_SPI_Has_DataReceived())
-	{	
-    sent = M8266WIFI_SPI_RecvData(data, 1, 10,&link_no, &status);
-		if(sent!=0)
-			{
-				 
-				 if (data[0] == 0x33 )
+				 if(receive_sign == 1)  //采样32通道
 				 {
-					 x=0x00000000U;		
-	         SPI2_Init(x);
-					 M8266WIFI_SPI_Send_Data(&send_data[0],1,link_no, &status);
-				 }
-				 if (data[0] == 0x34 )
-				 {
-					 x=0x00000008U;		
-	         SPI2_Init(x);
-					 M8266WIFI_SPI_Send_Data(&send_data[1],1,link_no, &status);
-				 }
-				 if (data[0] == 0x35 )
-				 {
-					 x=0x00000020U;		
-	         SPI2_Init(x);
-					 M8266WIFI_SPI_Send_Data(&send_data[2],1,link_no, &status);
-				 }
-				 if (data[0] == 0x36 )
-				 {
-					 x=0x00000038U;		
-	         SPI2_Init(x);
-					 M8266WIFI_SPI_Send_Data(&send_data[3],1,link_no, &status);
-				 }
-				 if(data[0] == 0x37)  
-				 { 
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[0]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[1]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[0];
-           chucun[0] = (uint8_t)(fasong >> 8); //取高八
-           chucun[1] = (uint8_t)fasong; //取低八
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);	
-				 }
-				  if(data[0] == 0x38)  
-				 {	
-           SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[1]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[1]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[1];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);	 
-				 }
-				 if(data[0] == 0x39)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[2]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[2]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[2];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x40)  
-				 {
-           SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[3]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[3]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[3];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x41)  
-				 {					
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[4]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[4]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[4];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x42)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[5]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[5]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[5];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x43)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[6]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[6]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[6];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x44)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[7]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[7]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[7];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x45)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[8]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[8]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[8];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x46)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[9]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[9]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[9];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x47)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[10]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[10]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[10];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x48)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[11]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[11]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[11];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x49)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[12]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[12]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[12];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x50)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[13]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[13]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[13];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x51)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[14]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[14]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[14];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x52)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[15]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[15]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[15];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x53)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[16]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[16]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[16];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x54)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[17]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[17]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[17];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x55)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[18]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[18]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[18];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x56)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[19]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[19]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[19];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x57)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[20]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[20]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[20];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x58)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[21]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[21]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[21];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x59)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[22]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[22]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[22];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x60)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[23]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[23]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[23];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x61)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[24]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[24]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[24];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x62)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[25]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[25]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[25];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x63)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[26]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[26]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[26];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x64)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[27]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[27]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[27];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x65)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[28]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[28]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[28];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x66)  
-				 {
-					SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[29]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[29]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[29];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x67)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[30]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[30]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[30];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x68)  
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[31]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[31]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[31];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
-				 if(data[0] == 0x76)  //采样32通道
-				 {
-					 int i;
-					 for (i=0;i<32;i++)
-		          {		
-               SPI2_CS_LOW();	
-			         SPI_RX_BUFFER[i+40]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[i]);
-               SPI2_CS_HIGH();								
-							 fasong = SPI_RX_BUFFER[i+40];
-					     chucun[0] = (uint8_t)(fasong >> 8); 
-               chucun[1] = (uint8_t)fasong; 
-               M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);	
-								M8266WIFI_Module_delay_ms(1);	
-					     
-		           }
-			    if(i==32)
-		         { 
-			         M8266WIFI_SPI_Send_Data(&send_data[4], 2, link_no, &status);
-			         i=0;
-				     }
+					 int i,j;
+					 for(j=0;j<22;j++)
+					 {
+						 for (i=0;i<32;i++)
+							{		
+								 SPI2_CS_LOW();	
+								 SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[i],&SPI_RX_BUFFER[66*j+2*i]);
+								 SPI2_CS_HIGH();								
+												
+							}
+							SPI_RX_BUFFER[66*j+64] = 0x12;
+							SPI_RX_BUFFER[66*j+65] = 0x34;
+							
+				    }
+					  M8266WIFI_SPI_Send_Data((uint8_t *)&SPI_RX_BUFFER, 1452, link_no, &status);	
+						//M8266WIFI_Module_delay_ms(1);	
 				}
-				 if(data[0] == 0x77)  //采样35通道
+						
+				 if(receive_sign == 2)  //采样35通道
 				 {
 					while(1)
 					{
@@ -582,7 +233,7 @@ while(1)
 					for (m=0;m<35;m++)
 		          {
 							 SPI2_CS_LOW();
-					     SPI_RX_BUFFER[m+80]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[m]);
+					     //SPI_RX_BUFFER[m+80]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[m]);
 			         SPI2_CS_HIGH();
 							 fasong = SPI_RX_BUFFER[m+80];
 					     chucun[0] = (uint8_t)(fasong >> 8); 
@@ -600,61 +251,24 @@ while(1)
 					 	}
 					 }
 				 }
-				 if(data[0] == 0x78)  //采样电压通道
+				 if(receive_sign == 3)  //采样电压通道
 				 {
 					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[180]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[34]);		
+			     //SPI_RX_BUFFER[180]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[34]);		
            SPI2_CS_HIGH();					
 					 fasong = SPI_RX_BUFFER[180];
            chucun[0] = (uint8_t)(fasong >> 8); 
            chucun[1] = (uint8_t)fasong; 
 					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
 				 }				 	 		
- ///**测试功能
-				 if(data[0] == 0x91)  //采样电压通道
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[181]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[32]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[181];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }
- if(data[0] == 0x92)  //采样电压通道
-				 {
-					 SPI2_CS_LOW();						 
-			     SPI_RX_BUFFER[182]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[33]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[182];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-				 }			//**/	 
-				 if(data[0] == 0x80)  //ascii码intan
-				 {
-					int j;
-			    for(j = 0; j < 5; j++)
-			      {			
-            SPI2_CS_LOW();				
-				    SPI_SendHalfWord(&hspi2,SPI_TX_intan[j]);
-				    SPI2_CS_HIGH();									
-						fasong = SPI_TX_intan[j];
-    		    chucun[0] = (uint8_t)(fasong >> 8); 
-            chucun[1] = (uint8_t)fasong;    					        
-            M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);	
-					  M8266WIFI_Module_delay_ms(100);	
-			       }
-				 }
-				 if(data[0] == 90)
+ 
+				 if(receive_sign == 4)
 				 {
 					 M8266WIFI_SPI_Send_Data((uint8_t *)&test[0], 2, link_no, &status);
 				 }
-			 }//if 0
-		 } //while end of
-	}
-	 }
-}// end of M8266WIFI_Test
+		}//if 0
+} //while end of
+}
 
 
 

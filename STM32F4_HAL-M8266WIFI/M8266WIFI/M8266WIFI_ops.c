@@ -19,6 +19,7 @@
 #include "M8266HostIf.h"
 #include "M8266WIFI_ops.h"
 
+#define USE_LED_AND_KEY_FOR_TEST
 void M8266WIFI_Module_delay_ms(u16 nms)
 {
 	 u16 i, j;
@@ -216,6 +217,40 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+	 /////////////////////////////////////////////////////////////////////////////////////////////////////
+	 #if 0  // Step 4: Used to evaluate the high-speed spi communication. Changed to #if 0 to comment it for formal release
+	 {   //(Chinese: 第四步，开发阶段和测试阶段，用于测试评估主机板在当前频率下进行高速SPI读写访问时的可靠性。
+		   //          如果足够可靠，则可以适当提高SPI频率；如果不可靠，则可能需要检查主机板连线或者降低SPI频率。
+       //		       产品研发完毕进入正式产品化发布阶段后，因为在研发阶段已经确立了最佳稳定频率，建议这里改成 #if 0，不必再测试)
+	 volatile u32  i, j;
+	 u8   byte;
+
+	 if(M8266WIFI_SPI_Interface_Communication_OK(&byte)==0) 	  									//	if SPI logical Communication failed
+   {
+		   while(1)
+			 {
+#ifdef USE_LED_AND_KEY_FOR_TEST	 // MB LEDs flash in 1Hz uppon errors
+	          LED_set(0, 0); LED_set(1, 0); M8266WIFI_Module_delay_ms(500);
+			      LED_set(0, 1); LED_set(1, 1); M8266WIFI_Module_delay_ms(500);
+#endif
+		   }
+	 }
+
+	 i = 100000;
+	 j = M8266WIFI_SPI_Interface_Communication_Stress_Test(i);
+	 if( (j<i)&&(i-j>5)) 		//  if SPI Communication stress test failed (Chinese: SPI底层通信压力测试失败，表明你的主机板或接线支持不了当前这么高的SPI频率设置)
+   {
+		   while(1)
+			 {
+#ifdef USE_LED_AND_KEY_FOR_TEST	 // MB LEDs flash in 1Hz uppon errors
+	          LED_set(0, 0); LED_set(1, 0); M8266WIFI_Module_delay_ms(500);
+			      LED_set(0, 1); LED_set(1, 1); M8266WIFI_Module_delay_ms(500);
+#endif
+		   }
+	 }
+ }
+#endif
+
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////
 	 // Step 5: Conifiguration to module

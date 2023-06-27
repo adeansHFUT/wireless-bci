@@ -64,7 +64,7 @@ void M8266HostIf_Init(void);
 void SPI2_Init(u32 x);
 
 
-uint16_t SPI_SendHalfWord(SPI_HandleTypeDef *hspi2, uint16_t HalfWord);
+uint16_t SPI_SendHalfWord(SPI_HandleTypeDef *hspi2, uint16_t HalfWord, uint8_t *receiveData);
 
 
 void M8266HostIf_SPI_SetSpeed(u32 SPI_BaudRatePrescaler);
