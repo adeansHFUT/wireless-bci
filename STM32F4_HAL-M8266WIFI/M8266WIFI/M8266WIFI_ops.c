@@ -287,10 +287,10 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 }
 #endif
 
-#if 0 // 5.4 If you expect to change the ap info overrding the default loaded from flash on bootup, enable it by "#if 1". Meanwhile, according to Protocols, the length of passwword should not be smaller than 8 Bytes per WAP or WAP2
+#if 1 // 5.4 If you expect to change the ap info overrding the default loaded from flash on bootup, enable it by "#if 1". Meanwhile, according to Protocols, the length of passwword should not be smaller than 8 Bytes per WAP or WAP2
 {     // (Chinese: 5.4 如果你希望改变模组作为AP热点时AP热点名称和密码，不使用模组启动时缺省参数，你可以这里改成 #if 1，并调整下面的API函数里的相关参数值. 同时根据相关协议约定，WAP和WAP2的密码长度不能少于8个字节)
 // u8 M8266WIFI_SPI_Config_AP(u8 ssid[13+1], u8 password[13+1], u8 enc, u8 channel, u8 saved, u16* status);
-	if(M8266WIFI_SPI_Config_AP("Anylinkin", "1234567890", 4, 1, 0, &status)==0)  // set to 4=WPA_WPA2_PSK, not saved // 0=OPEN, 1=WEP, 2=WPA_PSK, 3=WPA2_PSK, 4=WPA_WPA2_PSK
+	if(M8266WIFI_SPI_Config_AP("welink-Anylinkin", "1234567890", 4, 1, 0, &status)==0)  // set to 4=WPA_WPA2_PSK, not saved // 0=OPEN, 1=WEP, 2=WPA_PSK, 3=WPA2_PSK, 4=WPA_WPA2_PSK
     return 0;
 }
 #endif

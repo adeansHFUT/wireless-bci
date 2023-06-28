@@ -216,8 +216,9 @@ void ConfigureExternalInterrupt(void)
 
 uint8_t receive_size;
 uint8_t receive_sign;
-uint8_t receive_data, link_no;
-uint16_t status;
+uint8_t receive_data, link_no = 0;
+uint16_t status = 0;
+extern uint8_t first_acquire_circle;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_2)
@@ -231,6 +232,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 					{
 						case 112:
 							receive_sign = 1; // send 32 channels;
+							first_acquire_circle = 1;
 							break;
 						case 120:
 							receive_sign = 0; // pause

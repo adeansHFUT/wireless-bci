@@ -36,8 +36,7 @@ uint16_t SPI_TX_intan[5] = {0xe800, 0xe900, 0xea00, 0xeb00, 0xec00}; //AScii int
 extern uint32_t x;
 
 extern SPI_HandleTypeDef hspi2;
-
-#define SPI_RX_BUFFER_SIZE 2048
+uint8_t first_acquire_circle = 0;
 
 void M8266WIFI_Test(void)
 {
@@ -155,7 +154,7 @@ void M8266WIFI_Test(void)
 		                                        //  (Chinese: 如果TCP服务器，那么可以设置这个TCP服务器(因长时间无通信而)断开客户端的超时时间)
 #if 1
 		 //uint8_t M8266WIFI_SPI_Set_TcpServer_Auto_Discon_Timeout(uint8_t link_no, u16 timeout_in_s, u16* status)	
-		 if( M8266WIFI_SPI_Set_TcpServer_Auto_Discon_Timeout(link_no, 120, &status) == 0)
+		 if( M8266WIFI_SPI_Set_TcpServer_Auto_Discon_Timeout(link_no, 7200, &status) == 0)
      {
 		   while(1)
 		   {
@@ -197,23 +196,36 @@ void M8266WIFI_Test(void)
 #if (TEST_M8266WIFI_TYPE==3)  // Echo test: to receive data from remote and then echo back to remote (Chinese: 收发测试，模组将接收到的数据立刻返回给发送方)
 {
 	 extern uint8_t receive_sign;
-   uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460
+   uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460  (66*22=1452)
 	 uint8_t send_data[5]= {0x10,0x11,0x12,0x13,0xFF};
 	 uint16_t test[1]={0x5555};
 	 uint16_t FFzhiling[1]={0xFFFF};
 	 uint16_t fasong;
 	 uint8_t chucun[2];
-while(1)
-{
+	 while(1)
+	 {
 				 if(receive_sign == 1)  //采样32通道
 				 {
+					 
 					 int i,j;
+					 if(first_acquire_circle)  // discard the first two words 
+					 {
+						  uint8_t r_tem[2];
+							SPI2_CS_LOW();
+							SPI_SendHalfWord(&hspi2,CONVERT0,&r_tem[0]);
+							SPI2_CS_HIGH();
+							SPI2_CS_LOW();
+							SPI_SendHalfWord(&hspi2,CONVERT1,&r_tem[0]);
+							SPI2_CS_HIGH();
+							first_acquire_circle = 0;
+					 }
+					 
 					 for(j=0;j<22;j++)
 					 {
 						 for (i=0;i<32;i++)
 							{		
 								 SPI2_CS_LOW();	
-								 SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[i],&SPI_RX_BUFFER[66*j+2*i]);
+								 SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER_2[i],&SPI_RX_BUFFER[66*j+2*i]);
 								 SPI2_CS_HIGH();								
 												
 							}
