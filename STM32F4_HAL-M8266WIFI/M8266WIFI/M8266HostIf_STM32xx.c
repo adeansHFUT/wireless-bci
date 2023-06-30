@@ -153,7 +153,7 @@ u8 test1[2]={0x33,0x56};
 SPI_HandleTypeDef hspi2; 
 void SPI2_Init(u32 x)
 {	
-	uint8_t r_temp;
+	uint8_t r_temp[2];
   GPIO_InitTypeDef  GPIO_InitStruct;
 
   __HAL_RCC_GPIOB_CLK_ENABLE(); // 使能GPIOB时钟
@@ -204,7 +204,7 @@ void SPI2_Init(u32 x)
 	
 	   SPI2_CS_LOW(); delay_us( 50 );
 	 
-	   SPI_SendHalfWord(&hspi2,0x80fe,&r_temp);//0x80fe初始化
+	   SPI_SendHalfWord(&hspi2,0x80fe,r_temp);//0x80fe初始化
 	
      delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -213,7 +213,7 @@ void SPI2_Init(u32 x)
 	 /* 初始化芯片配置寄存器0：ADC配置和放大器快速建立 */
 	 	SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x80de,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x80de,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -223,7 +223,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8120,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8120,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -232,7 +232,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8228,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8228,r_temp);
 
 		delay_us( 50 );SPI2_CS_HIGH();
 	
@@ -241,7 +241,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8301,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8301,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -251,7 +251,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8480,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8480,r_temp);
 
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -261,7 +261,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8500,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8500,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -270,7 +270,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8600,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8600,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -280,7 +280,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8700,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8700,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -289,7 +289,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x881e,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x881e,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -298,7 +298,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8985,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8985,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -306,7 +306,7 @@ void SPI2_Init(u32 x)
 		
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8985,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8985,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -315,7 +315,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8a2b,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8a2b,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -324,7 +324,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8b86,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8b86,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -334,7 +334,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8c10,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8c10,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -344,7 +344,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8dfc,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8dfc,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -353,7 +353,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8eff,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8eff,r_temp);
     
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -362,7 +362,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x8fff,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x8fff,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -372,7 +372,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x90ff,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x90ff,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -382,7 +382,7 @@ void SPI2_Init(u32 x)
 	 
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x91ff,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x91ff,r_temp);
 	
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -391,7 +391,7 @@ void SPI2_Init(u32 x)
 		
 	  SPI2_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(&hspi2,0x5500,&r_temp);
+	  SPI_SendHalfWord(&hspi2,0x5500,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -400,7 +400,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff0,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff0,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -409,7 +409,7 @@ void SPI2_Init(u32 x)
 
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff1,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff1,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -418,7 +418,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff2,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff2,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -427,7 +427,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff3,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff3,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -436,7 +436,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff4,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff4,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -445,7 +445,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff5,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff5,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -454,7 +454,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff6,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff6,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -463,7 +463,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff7,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff7,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -472,7 +472,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff8,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff8,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		
@@ -481,7 +481,7 @@ void SPI2_Init(u32 x)
 		
 		SPI2_CS_LOW(); delay_us( 50 );
 		
-		SPI_SendHalfWord(&hspi2,0xfff9,&r_temp);
+		SPI_SendHalfWord(&hspi2,0xfff9,r_temp);
 		
 		delay_us( 50 );SPI2_CS_HIGH();
 		

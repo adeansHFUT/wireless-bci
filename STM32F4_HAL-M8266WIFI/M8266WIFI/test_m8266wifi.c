@@ -202,6 +202,19 @@ void M8266WIFI_Test(void)
 	 uint16_t FFzhiling[1]={0xFFFF};
 	 uint16_t fasong;
 	 uint8_t chucun[2];
+	 int m;
+	 for(m=0; m<5; m++)
+	 {
+		SPI2_CS_LOW();
+		SPI_SendHalfWord(&hspi2,SPI_TX_intan[m] ,&SPI_RX_BUFFER[2*m]);
+	  SPI2_CS_HIGH();
+	 }
+	 SPI2_CS_LOW();
+	 SPI_SendHalfWord(&hspi2,SPI_TX_intan[0] ,&SPI_RX_BUFFER[10]);
+	 SPI2_CS_HIGH();
+	 SPI2_CS_LOW();
+	 SPI_SendHalfWord(&hspi2,SPI_TX_intan[0] ,&SPI_RX_BUFFER[12]);
+	 SPI2_CS_HIGH();
 	 while(1)
 	 {
 				 if(receive_sign == 1)  //采样32通道

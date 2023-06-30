@@ -200,35 +200,36 @@ void ConfigureExternalInterrupt(void)
     // ??GPIOA??
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-    // ??PA2?????,?????
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    // ??PA0?????,?????
+    GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN; // ??:??????,?????????
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // ?????????
-    HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
 
     // ?????????
-    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
 uint8_t receive_size;
 uint8_t receive_sign;
-uint8_t receive_data, link_no = 0;
+uint8_t receive_data[10] = {0};
+uint8_t link_no = 0;
 uint16_t status = 0;
 extern uint8_t first_acquire_circle;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_2)
+    if (GPIO_Pin == GPIO_PIN_0)
     {
 			if(M8266WIFI_SPI_Has_DataReceived())
 			{	
-				receive_size = M8266WIFI_SPI_RecvData(&receive_data, 1, 10,&link_no, &status);
+				receive_size = M8266WIFI_SPI_RecvData(receive_data, 1, 10,&link_no, &status);
 				if(receive_size!=0)
 				{
-					switch(receive_data)
+					switch(receive_data[0])
 					{
 						case 112:
 							receive_sign = 1; // send 32 channels;
@@ -245,9 +246,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			}
 		}
 }
-void EXTI2_IRQHandler(void)
+void EXTI0_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
 }
 
 /**

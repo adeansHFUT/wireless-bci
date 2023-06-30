@@ -21,11 +21,10 @@ int main(void)
 	uint8_t success=0;
   HAL_Init();
 	SystemClock_Config(8,336,2,7);    //void SystemClock_Config(int pllm,int plln,int pllp,int pllq)
-	ConfigureExternalInterrupt(); // config external interrupt
 	delay_Init();
 	LED_Init();
 	M8266HostIf_Init();	    //WIFISPI初始化
-	SPI2_Init(SPI_BAUDRATEPRESCALER_2);     //intan baudrate = 1/2 APB1 = 21mhz
+	SPI2_Init(SPI_BAUDRATEPRESCALER_4);     //intan baudrate = 1/2 APB1 = 21mhz
 	success = M8266WIFI_Module_Init_Via_SPI(); //成功就返回1，不成功就返回0的，只是表示初始化是否成功
   if(success)
 	{}	
@@ -34,6 +33,6 @@ int main(void)
 		  while(1)
 			{}
 	}
-
+	ConfigureExternalInterrupt(); // config external interrupt
 	M8266WIFI_Test();
 }
