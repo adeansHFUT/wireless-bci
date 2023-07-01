@@ -218,7 +218,7 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	 /////////////////////////////////////////////////////////////////////////////////////////////////////
-	 #if 0  // Step 4: Used to evaluate the high-speed spi communication. Changed to #if 0 to comment it for formal release
+#if 0  // Step 4: Used to evaluate the high-speed spi communication. Changed to #if 0 to comment it for formal release
 	 {   //(Chinese: 第四步，开发阶段和测试阶段，用于测试评估主机板在当前频率下进行高速SPI读写访问时的可靠性。
 		   //          如果足够可靠，则可以适当提高SPI频率；如果不可靠，则可能需要检查主机板连线或者降低SPI频率。
        //		       产品研发完毕进入正式产品化发布阶段后，因为在研发阶段已经确立了最佳稳定频率，建议这里改成 #if 0，不必再测试)

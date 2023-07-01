@@ -40,6 +40,8 @@ extern uint32_t x;
 
 extern SPI_HandleTypeDef hspi2;
 uint8_t first_acquire_circle = 0;
+uint16_t rev_word;
+
 void M8266WIFI_Test(void)
 {
 	 extern uint16_t status;
@@ -194,7 +196,6 @@ void M8266WIFI_Test(void)
 		 }
 	}
 
-
 #if (TEST_M8266WIFI_TYPE==3)  // Echo test: to receive data from remote and then echo back to remote (Chinese: 收发测试，模组将接收到的数据立刻返回给发送方)
 {
 	 extern uint8_t receive_sign;
@@ -206,6 +207,7 @@ void M8266WIFI_Test(void)
 	 uint8_t chucun[2];
 	 uint16_t rec_intan[7];
 	 int m;
+	 int i,j;
 	 for(m=0; m<7; m++)
 	 {
 		SPI2_CS_LOW();
@@ -216,7 +218,7 @@ void M8266WIFI_Test(void)
 	 {}
 	 else  //INTAN verification not pass
 	 {
-		 while(1);// write flash
+		 //while(1);// write flash
 		 NVIC_SystemReset();  // reset MCU
 	 }
 		 
@@ -226,8 +228,6 @@ void M8266WIFI_Test(void)
 				 if(receive_sign == 1)  //采样32通道
 				 {
 					 
-					 int i,j;
-					 uint16_t rev_word;
 					 if(first_acquire_circle)  // discard the first two words 
 					 {
 							SPI2_CS_LOW();
@@ -255,7 +255,20 @@ void M8266WIFI_Test(void)
 					  M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);	
 						//M8266WIFI_Module_delay_ms(1);	
 				}
-						
+				
+				if(receive_sign == 5)
+				{
+					for(m=0; m<726;m++)
+					{
+						SPI2_CS_LOW();
+						rev_word = SPI_SendHalfWord(&hspi2,CONVERT0);
+						SPI2_CS_HIGH();
+						SPI_RX_BUFFER[2*m] = (uint8_t)(rev_word >> 8);  // ensure send squence
+						SPI_RX_BUFFER[2*m+1] = (uint8_t)rev_word;	
+						__nop();
+					}
+					M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
+				}
 				 if(receive_sign == 2)  //采样35通道
 				 {
 					while(1)
