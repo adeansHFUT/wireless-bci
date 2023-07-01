@@ -30,14 +30,16 @@ uint16_t SPI_TX_BUFFER_2[32] = {CONVERT2,CONVERT3,CONVERT4,CONVERT5,CONVERT6,CON
 					                      CONVERT8,CONVERT9,CONVERT10,CONVERT11,CONVERT12,CONVERT13,CONVERT14,CONVERT15,
 					                      CONVERT16,CONVERT17,CONVERT18,CONVERT19,CONVERT20,CONVERT21,CONVERT22,CONVERT23,CONVERT24,
 				                        CONVERT25,CONVERT26,CONVERT27,CONVERT28,CONVERT29,CONVERT30,CONVERT31,CONVERT0,CONVERT1};
-uint16_t SPI_TX_intan[5] = {0xe800, 0xe900, 0xea00, 0xeb00, 0xec00}; //AScii intan
-
+uint16_t SPI_TX_intan[7] = {0xe800 , 0xe900, 0xea00, 0xeb00, 0xec00, 0xec00, 0xec00,}; //AScii intan
+uint16_t SPI_TX_BUFFER_withintan[37] = {CONVERT2,CONVERT3,CONVERT4,CONVERT5,CONVERT6,CONVERT7,
+					                      CONVERT8,CONVERT9,CONVERT10,CONVERT11,CONVERT12,CONVERT13,CONVERT14,CONVERT15,
+					                      CONVERT16,CONVERT17,CONVERT18,CONVERT19,CONVERT20,CONVERT21,CONVERT22,CONVERT23,CONVERT24,
+				                        CONVERT25,CONVERT26,CONVERT27,CONVERT28,CONVERT29,CONVERT30,CONVERT31,0xe800, 0xe900, 0xea00, 0xeb00, 0xec00,CONVERT0,CONVERT1};
 														
 extern uint32_t x;
 
 extern SPI_HandleTypeDef hspi2;
 uint8_t first_acquire_circle = 0;
-
 void M8266WIFI_Test(void)
 {
 	 extern uint16_t status;
@@ -202,33 +204,37 @@ void M8266WIFI_Test(void)
 	 uint16_t FFzhiling[1]={0xFFFF};
 	 uint16_t fasong;
 	 uint8_t chucun[2];
+	 uint16_t rec_intan[7];
 	 int m;
-	 for(m=0; m<5; m++)
+	 for(m=0; m<7; m++)
 	 {
 		SPI2_CS_LOW();
-		SPI_SendHalfWord(&hspi2,SPI_TX_intan[m] ,&SPI_RX_BUFFER[2*m]);
+		rec_intan[m] = SPI_SendHalfWord(&hspi2,SPI_TX_intan[m]);  // test SPI2 baud is ok for INTAN accquire
 	  SPI2_CS_HIGH();
 	 }
-	 SPI2_CS_LOW();
-	 SPI_SendHalfWord(&hspi2,SPI_TX_intan[0] ,&SPI_RX_BUFFER[10]);
-	 SPI2_CS_HIGH();
-	 SPI2_CS_LOW();
-	 SPI_SendHalfWord(&hspi2,SPI_TX_intan[0] ,&SPI_RX_BUFFER[12]);
-	 SPI2_CS_HIGH();
+	 if(rec_intan[2]==0x0049&&rec_intan[3]==0x004E&&rec_intan[4]==0x0054&&rec_intan[5]==0x0041&&rec_intan[6]==0x004E)
+	 {}
+	 else  //INTAN verification not pass
+	 {
+		 while(1);// write flash
+		 NVIC_SystemReset();  // reset MCU
+	 }
+		 
+	 
 	 while(1)
 	 {
 				 if(receive_sign == 1)  //采样32通道
 				 {
 					 
 					 int i,j;
+					 uint16_t rev_word;
 					 if(first_acquire_circle)  // discard the first two words 
 					 {
-						  uint8_t r_tem[2];
 							SPI2_CS_LOW();
-							SPI_SendHalfWord(&hspi2,CONVERT0,&r_tem[0]);
+							SPI_SendHalfWord(&hspi2,CONVERT0);
 							SPI2_CS_HIGH();
 							SPI2_CS_LOW();
-							SPI_SendHalfWord(&hspi2,CONVERT1,&r_tem[0]);
+							SPI_SendHalfWord(&hspi2,CONVERT1);
 							SPI2_CS_HIGH();
 							first_acquire_circle = 0;
 					 }
@@ -238,15 +244,15 @@ void M8266WIFI_Test(void)
 						 for (i=0;i<32;i++)
 							{		
 								 SPI2_CS_LOW();	
-								 SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER_2[i],&SPI_RX_BUFFER[66*j+2*i]);
-								 SPI2_CS_HIGH();								
-												
+								 rev_word = SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER_2[i]);
+								 SPI2_CS_HIGH();
+								 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
+								 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
 							}
 							SPI_RX_BUFFER[66*j+64] = 0x12;
 							SPI_RX_BUFFER[66*j+65] = 0x34;
-							
 				    }
-					  M8266WIFI_SPI_Send_Data((uint8_t *)&SPI_RX_BUFFER, 1452, link_no, &status);	
+					  M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);	
 						//M8266WIFI_Module_delay_ms(1);	
 				}
 						
@@ -289,7 +295,8 @@ void M8266WIFI_Test(void)
  
 				 if(receive_sign == 4)
 				 {
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&test[0], 2, link_no, &status);
+					 M8266WIFI_SPI_Send_Data((uint8_t *)&SPI_RX_BUFFER[4], 10, link_no, &status);
+					 receive_sign =0;
 				 }
 		}//if 0
 } //while end of

@@ -238,6 +238,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 						case 120:
 							receive_sign = 0; // pause
 							break;
+						case 71:
+							receive_sign = 4;
+							break;
 						default:
 							break;
 					}
