@@ -25,6 +25,7 @@
 				 u16 x = 0x0010;//SPI_BaudRatePrescaler 8 
 				 u16 delay_time = 100;
 				 u8 first_acquire_circle = 0;
+				 u8 first_test_sd = 0;
 
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
@@ -53,12 +54,6 @@ int main(void)
 	
 	my_mem_init(SRAMIN);		//初始化内部内存池 
 	//my_mem_init(SRAMCCM);		//初始化CCM内存池
-		   
- 	while(SD_Init())//检测不到SD卡
-	{
-		//Usart_SendHalfWord(USART6,0x1122);
-		delay_ms(500);
-	}
 		
 	//delay_ms(1000);
 		
@@ -169,6 +164,16 @@ int main(void)
 		}
 		if(sign9)
 		{
+			if(first_test_sd)
+			{
+				while(SD_Init())//检测不到SD卡
+				{
+					//Usart_SendHalfWord(USART6,0x1122);
+					delay_ms(500);
+				}
+				first_test_sd = 0;
+			}
+				
 	    for (i=0;i<35;i++)
 		 {
 					

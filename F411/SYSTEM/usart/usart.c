@@ -188,7 +188,7 @@ void USART6_IRQHandler(void)                	//串口4中断服务程序
 			
 		if(Res == 115) //指令73：存SD卡 
 		
-			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;sign11=0;}
+			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=0;sign9=1;sign10=0;sign11=0;first_test_sd = 1;}
 				
 		if(Res == 120) //指令78：关闭 
 		
