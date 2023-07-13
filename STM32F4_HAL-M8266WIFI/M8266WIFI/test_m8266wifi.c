@@ -41,7 +41,8 @@ extern uint32_t x;
 extern SPI_HandleTypeDef hspi2;
 uint8_t first_acquire_circle = 0;
 uint16_t rev_word;
-
+uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460  (66*22=1452)
+uint8_t SPI_test[1452*20];
 void M8266WIFI_Test(void)
 {
 	 extern uint16_t status;
@@ -199,7 +200,7 @@ void M8266WIFI_Test(void)
 #if (TEST_M8266WIFI_TYPE==3)  // Echo test: to receive data from remote and then echo back to remote (Chinese: 收发测试，模组将接收到的数据立刻返回给发送方)
 {
 	 extern uint8_t receive_sign;
-   uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460  (66*22=1452)
+
 	 uint8_t send_data[5]= {0x10,0x11,0x12,0x13,0xFF};
 	 uint16_t test[1]={0x5555};
 	 uint16_t FFzhiling[1]={0xFFFF};
@@ -221,8 +222,21 @@ void M8266WIFI_Test(void)
 		 //while(1);// write flash
 		 NVIC_SystemReset();  // reset MCU
 	 }
-		 
-	 
+	  for(j=0;j<22;j++)
+					 {
+						 for (i=0;i<32;i++)
+							{		
+
+								 rev_word = 0x1111;
+
+								 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
+								 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
+							}
+							SPI_RX_BUFFER[66*j+64] = 0x12;
+							SPI_RX_BUFFER[66*j+65] = 0x34;
+				    }
+	 for(i=0; i<20;i++)
+		memcpy(&SPI_test[1452*i], SPI_RX_BUFFER,1452);
 	 while(1)
 	 {
 				 if(receive_sign == 1)  //采样32通道
@@ -295,15 +309,11 @@ void M8266WIFI_Test(void)
 					 	}
 					 }
 				 }
-				 if(receive_sign == 3)  //采样电压通道
+				 if(receive_sign == 3)  //test acquire rate 
 				 {
-					 SPI2_CS_LOW();						 
-			     //SPI_RX_BUFFER[180]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[34]);		
-           SPI2_CS_HIGH();					
-					 fasong = SPI_RX_BUFFER[180];
-           chucun[0] = (uint8_t)(fasong >> 8); 
-           chucun[1] = (uint8_t)fasong; 
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
+					 
+					 //M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
+					 M8266WIFI_SPI_Send_BlockData((uint8_t *)SPI_test, 1452*20, 5000, link_no, NULL, 0,&status);
 				 }				 	 		
  
 				 if(receive_sign == 4)
