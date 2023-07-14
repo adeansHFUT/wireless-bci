@@ -232,7 +232,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 					switch(receive_data[0])
 					{
 						case 112:
-							receive_sign = 3; // send 32 channels;
+							receive_sign = 1; // send 32 channels;
 							first_acquire_circle = 1;
 							break;
 						case 120:
@@ -243,6 +243,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 							break;
 						case 72:
 							receive_sign = 5;
+							break;
+						case 74:
+							receive_sign = 3; // test wifi speed
 							break;
 						default:
 							break;
