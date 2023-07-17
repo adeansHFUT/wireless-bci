@@ -234,11 +234,11 @@ uint8_t receive_sign;
 uint8_t receive_data[10] = {0};
 uint8_t link_no = 0;
 uint16_t status = 0;
+uint8_t maybe_receive = 0;
 extern uint8_t first_acquire_circle;
-void HAL_GPIO_readin_Callback(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
+
+void handle_receive(void)
 {
-    if (HAL_GPIO_ReadPin(GPIO_Port, GPIO_Pin) == GPIO_PIN_SET)  // when IO is high level
-    {
 			if(M8266WIFI_SPI_Has_DataReceived())
 			{	
 				receive_size = M8266WIFI_SPI_RecvData(receive_data, 1, 10,&link_no, &status);
@@ -266,13 +266,15 @@ void HAL_GPIO_readin_Callback(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 							break;
 					}
 				}
-						
 			}
-		}
+				
 }
-void EXTI0_IRQHandler(void)
+void HAL_GPIO_readin_Callback(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+    if(HAL_GPIO_ReadPin(GPIO_Port, GPIO_Pin) == GPIO_PIN_SET)  // when IO is high level
+    {
+			maybe_receive = 1;
+		}
 }
 
 void TIM3_IRQHandler(void)

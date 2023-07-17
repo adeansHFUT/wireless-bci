@@ -60,6 +60,7 @@ void PendSV_Handler(void);
 void SysTick_Handler(void);
 void ConfigurePA0_readin(void);
 void gtim_tim3_int_init(void);
+void handle_receive(void);
 #ifdef __cplusplus
 }
 #endif

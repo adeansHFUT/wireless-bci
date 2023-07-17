@@ -21,6 +21,7 @@
 #include "stdint.h"
 #include "stm32f4xx_hal.h"
 #include "string.h"
+#include "stm32f4xx_it.h"
 
 u16 SPI_TX_BUFFER[35] =   {CONVERT0,CONVERT1,CONVERT2,CONVERT3,CONVERT4,CONVERT5,CONVERT6,CONVERT7,
 					                      CONVERT8,CONVERT9,CONVERT10,CONVERT11,CONVERT12,CONVERT13,CONVERT14,CONVERT15,
@@ -200,6 +201,7 @@ void M8266WIFI_Test(void)
 #if (TEST_M8266WIFI_TYPE==3)  // Echo test: to receive data from remote and then echo back to remote (Chinese: 收发测试，模组将接收到的数据立刻返回给发送方)
 {
 	 extern uint8_t receive_sign;
+	 extern uint8_t maybe_receive;
 
 	 uint8_t send_data[5]= {0x10,0x11,0x12,0x13,0xFF};
 	 uint16_t test[1]={0x5555};
@@ -242,6 +244,13 @@ void M8266WIFI_Test(void)
 		memcpy(&SPI_test[1452*i], SPI_RX_BUFFER,1452);
 	 while(1)
 	 {
+		/*****************************handle receive data situation*************************************************/			
+				if(maybe_receive)
+				{
+						handle_receive();
+						maybe_receive = 0;
+				}		
+		/*****************************handle send data situation*************************************************/
 				 if(receive_sign == 1)  //采样32通道
 				 {
 					 
@@ -348,6 +357,7 @@ void M8266WIFI_Test(void)
 							 debug_point = 4;
 							 M8266HostIf_delay_us(101);
 						}
+						
 				 }				 	 		
  
 				 if(receive_sign == 4)
