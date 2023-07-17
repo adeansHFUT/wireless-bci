@@ -187,11 +187,13 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 
 #if  defined(MCU_IS_STM32F4XX) || defined(MCU_IS_STM32F4XX_HAL)  // F4 has SPI, SPI2 & SPI3, and possible SPI4
   #if (M8266WIFI_SPI_INTERFACE_NO == 1) || (M8266WIFI_SPI_INTERFACE_NO == 4)
-		M8266HostIf_SPI_SetSpeed(SPI_BaudRatePrescaler_4);				// Setup SPI Clock. Here 84/4 = 21.0MHz for STM32F4xx SPI1 or SPI4, up to 40MHz, since SPI1/4 clock devided from faster APB2 clock
+		//M8266HostIf_SPI_SetSpeed(SPI_BaudRatePrescaler_4);				// Setup SPI Clock. Here 84/4 = 21.0MHz for STM32F4xx SPI1 or SPI4, up to 40MHz, since SPI1/4 clock devided from faster APB2 clock
+		M8266HostIf_SPI_SetSpeed(SPI_BaudRatePrescaler_8);				// Setup SPI Clock. Here 84/4 = 21.0MHz for STM32F4xx SPI1 or SPI4, up to 40MHz, since SPI1/4 clock devided from faster APB2 clock
   #elif (M8266WIFI_SPI_INTERFACE_NO == 2) || (M8266WIFI_SPI_INTERFACE_NO == 3)
 		M8266HostIf_SPI_SetSpeed(SPI_BaudRatePrescaler_2);				// Setup SPI Clock. Here 42/2 = 21.0MHz for STM32F4xx SPI2 or SPI3, up to 21MHz, since SPI2/3 clock devided from lowver APB1 clock
 	#endif
-	 spi_clk = 21000000;
+	 //spi_clk = 21000000;   // when prescaler = 4 , clk = 21000000
+	 spi_clk = 10500000;   // when presscaler = 8 , clk = 10500000
 #endif
 
 
@@ -218,7 +220,7 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	 /////////////////////////////////////////////////////////////////////////////////////////////////////
-#if 0  // Step 4: Used to evaluate the high-speed spi communication. Changed to #if 0 to comment it for formal release
+#if 1  // Step 4: Used to evaluate the high-speed spi communication. Changed to #if 0 to comment it for formal release
 	 {   //(Chinese: 第四步，开发阶段和测试阶段，用于测试评估主机板在当前频率下进行高速SPI读写访问时的可靠性。
 		   //          如果足够可靠，则可以适当提高SPI频率；如果不可靠，则可能需要检查主机板连线或者降低SPI频率。
        //		       产品研发完毕进入正式产品化发布阶段后，因为在研发阶段已经确立了最佳稳定频率，建议这里改成 #if 0，不必再测试)
