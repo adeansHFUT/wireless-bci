@@ -109,7 +109,7 @@ void M8266WIFI_Test(void)
 
 ///////
 //step 0: config tcp windows number (Chinese: 步骤0：如果是TCP类型的套接字，可以配置调整窗口参数）
-#if ( 0 && ((TEST_CONNECTION_TYPE==1)||(TEST_CONNECTION_TYPE==2)) ) //If you hope to change TCP Windows, please change '0' to '1' in the #if clause before setup the connection
+#if ( 1 && ((TEST_CONNECTION_TYPE==1)||(TEST_CONNECTION_TYPE==2)) ) //If you hope to change TCP Windows, please change '0' to '1' in the #if clause before setup the connection
 																																		//(Chinese: 如果想改变套接字的窗口数，可以将#if语句中的0改成1，这个配置需要在创建套接字之前执行)
 // uint8_t M8266WIFI_SPI_Config_Tcp_Window_num(uint8_t link_no, uint8_t tcp_wnd_num, u16* status)
   if(M8266WIFI_SPI_Config_Tcp_Window_num(link_no, 4, &status)==0)
@@ -209,6 +209,9 @@ void M8266WIFI_Test(void)
 	 uint16_t rec_intan[7];
 	 int m;
 	 int i,j;
+	 volatile u32 sent = 0;
+   volatile u32 total_sent = 0, MBytes = 0; 
+	 volatile u8 debug_point;
 	 for(m=0; m<7; m++)
 	 {
 		SPI2_CS_LOW();
@@ -311,9 +314,40 @@ void M8266WIFI_Test(void)
 				 }
 				 if(receive_sign == 3)  //test acquire rate 
 				 {
-					 
-					 //M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
-					 M8266WIFI_SPI_Send_BlockData((uint8_t *)SPI_test, 1452*20, 5000, link_no, NULL, 0,&status);
+						if(total_sent> 1024*1024)  // watch MBytes*1024*1024+total_sent, which is the count of data module sends, compared with the received count at the reception end, to determin the packet loss etc
+						{                          // (Chinese: 持续发送一段时间后，观察表达式 MBytes*1024*1024+total_sent 的值，和接收端接收到的数据个数进行比较，可以粗略衡量模组的丢包率。)
+							 MBytes++;
+							 total_sent -= 1024*1024;
+						}
+						 
+						 //M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
+						 sent = M8266WIFI_SPI_Send_BlockData((uint8_t *)SPI_test, 1452*20, 5000, link_no, NULL, 0,&status);
+						 total_sent += sent;
+						
+						if( (sent==1452*20) && ((status&0xFF)==0x00) ) //Send successfully 
+						{
+						}
+						else if( (status&0xFF) == 0x1E)			       // 0x1E = too many errors ecountered during sending and can not fixed, or transsmission blocked heavily(Chinese: 发送阶段遇到太多的错误或阻塞了，可以考虑加大max_loops)
+						{
+							debug_point = 1;
+							//add some process here (Chinese: 可以在此处加一些处理，比如增加max_loops的值)
+						}
+						else if(  ((status&0xFF) == 0x14)			 // 0x14 = connection of link_no not present (Chinese: 该套接字不存在)
+									 || ((status&0xFF) == 0x15) )    // 0x15 = connection of link_no closed(Chinese: 该套接字已经关闭或断开)			
+						{
+							 debug_point = 2;
+							 //need to re-establish the socket connection (Chinese: 需要重建建立套接字)
+						}
+						else if( (status&0xFF) == 0x18 )        // 0x18 = TCP server in listening states and no tcp clients have connected. (Chinese: 这个TCP服务器还没有客户端连接着它)
+						{
+							 debug_point = 3;
+							 M8266HostIf_delay_us(99);
+						}
+						else
+						{
+							 debug_point = 4;
+							 M8266HostIf_delay_us(101);
+						}
 				 }				 	 		
  
 				 if(receive_sign == 4)
