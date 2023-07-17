@@ -20,7 +20,7 @@ int main(void)
 {
 	uint8_t success=0;
   HAL_Init();
-	SystemClock_Config(8,336,2,7);    //void SystemClock_Config(int pllm,int plln,int pllp,int pllq)
+	SystemClock_Config(8,336,2,7);    //void SystemClock_Config(int pllm,int plln,int pllp,int pllq) 168Mhz
 	delay_Init();
 	LED_Init();
 	M8266HostIf_Init();	    //WIFISPI≥ı ºªØ
@@ -33,6 +33,7 @@ int main(void)
 		  while(1)
 			{}
 	}
-	ConfigureExternalInterrupt(); // config external interrupt
-	M8266WIFI_Test();
+	
+	gtim_tim3_int_init(); // every 200ms scan GPIO PA0
+	M8266WIFI_Test(); 
 }

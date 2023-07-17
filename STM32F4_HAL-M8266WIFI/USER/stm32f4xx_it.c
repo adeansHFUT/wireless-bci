@@ -47,6 +47,8 @@
 #include "stm32f4xx_hal.h"
 #include "M8266WIFIDrv.h"
 #include "M8266HostIf.h"
+#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
+#include "system_stm32f4xx.h"
 
 #ifdef _RTE_
 #include "RTE_Components.h"             /* Component selection */
@@ -193,36 +195,49 @@ void PendSV_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
-void ConfigureExternalInterrupt(void)
+void ConfigurePA0_readin(void)
 {
-    GPIO_InitTypeDef GPIO_InitStruct;
+	
+	  GPIO_InitTypeDef GPIO_InitStruct;
 
-    // ??GPIOA??
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-    // ??PA0?????,?????
     GPIO_InitStruct.Pin = GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN; // ??:??????,?????????
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // ?????????
-    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
-
-    // ?????????
-    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
+
+// TIM3 init
+
+TIM_HandleTypeDef g_timx_handle; 
+void gtim_tim3_int_init(void)
+{
+		ConfigurePA0_readin();
+    __HAL_RCC_TIM3_CLK_ENABLE();                             /* ??TIM3?? */
+ 
+    g_timx_handle.Instance = TIM3;                          /* ?????3 */
+    g_timx_handle.Init.Prescaler = 8399;                     /* 10khz */
+    g_timx_handle.Init.CounterMode = TIM_COUNTERMODE_UP;    /* ?????? */
+    g_timx_handle.Init.Period = 1999;                        /* 5hz */
+    HAL_TIM_Base_Init(&g_timx_handle);
+    
+    HAL_NVIC_SetPriority(TIM3_IRQn, 1, 0);      /* ???????,?????1,????3 */
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);                 /* ??ITMx?? */
+ 
+    HAL_TIM_Base_Start_IT(&g_timx_handle);         /* ?????x????x???? */
+
+}
 uint8_t receive_size;
 uint8_t receive_sign;
 uint8_t receive_data[10] = {0};
 uint8_t link_no = 0;
 uint16_t status = 0;
 extern uint8_t first_acquire_circle;
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void HAL_GPIO_readin_Callback(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_0)
+    if (HAL_GPIO_ReadPin(GPIO_Port, GPIO_Pin) == GPIO_PIN_SET)  // when IO is high level
     {
 			if(M8266WIFI_SPI_Has_DataReceived())
 			{	
@@ -258,6 +273,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void EXTI0_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+
+void TIM3_IRQHandler(void)
+{
+    /* ???????????HAL??????????,???????????????? */
+    if(__HAL_TIM_GET_FLAG(&g_timx_handle, TIM_FLAG_UPDATE) != RESET)
+    {
+        HAL_GPIO_readin_Callback(GPIOA, GPIO_PIN_0);
+        __HAL_TIM_CLEAR_IT(&g_timx_handle, TIM_IT_UPDATE);  /* ???????????? */
+    }
 }
 
 /**

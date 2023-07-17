@@ -234,7 +234,8 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 #ifdef USE_LED_AND_KEY_FOR_TEST	 // MB LEDs flash in 1Hz uppon errors
 	          LED_set(0, 0); LED_set(1, 0); M8266WIFI_Module_delay_ms(500);
 			      LED_set(0, 1); LED_set(1, 1); M8266WIFI_Module_delay_ms(500);
-#endif
+#endif	
+				 NVIC_SystemReset();  // reset MCU
 		   }
 	 }
 
@@ -248,6 +249,7 @@ u8 M8266WIFI_SPI_wait_sta_connecting_to_ap_and_get_ip(char* sta_ip, u8 max_wait_
 	          LED_set(0, 0); LED_set(1, 0); M8266WIFI_Module_delay_ms(500);
 			      LED_set(0, 1); LED_set(1, 1); M8266WIFI_Module_delay_ms(500);
 #endif
+				 NVIC_SystemReset();  // reset MCU
 		   }
 	 }
  }
