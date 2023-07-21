@@ -56,7 +56,12 @@ int main(void)
 	//my_mem_init(SRAMCCM);		//初始化CCM内存池
 		
 	//delay_ms(1000);
-		
+	while(SD_Init())//检测不到SD卡
+	{
+		//Usart_SendHalfWord(USART6,0x1122);
+		delay_ms(500);
+		NVIC_SystemReset();  //reset 
+	}	
 	
 	while(1)
 	{
@@ -163,17 +168,7 @@ int main(void)
 			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));						
 		}
 		if(sign9)
-		{
-			if(first_test_sd)
-			{
-				while(SD_Init())//检测不到SD卡
-				{
-					//Usart_SendHalfWord(USART6,0x1122);
-					delay_ms(500);
-				}
-				first_test_sd = 0;
-			}
-				
+		{			
 	    for (i=0;i<35;i++)
 		 {
 					
@@ -184,7 +179,7 @@ int main(void)
 			SPI_CS_HIGH();
 			
 			tmpbuf1[cnt] = SPI_I2S_ReceiveData(SPI1);
-			Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
+			//Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
 
 			cnt++;
 			if(cnt == 4096)
@@ -195,8 +190,6 @@ int main(void)
 			}
 		 }
 		}
-		else
-			cnt = 0; //avoid store last cycle data after another call sign9
 		
 	if(sign10)  // add intan character send function
 		{
