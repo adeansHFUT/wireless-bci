@@ -182,7 +182,7 @@ void USART6_IRQHandler(void)                	//串口4中断服务程序
 		
 			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;sign7=1;sign8=0;sign9=0;sign10=0;sign11=0;}
 			
-		if(Res == 114) //指令72：采样电压通道 
+		if(Res == 114) //指令72：finish store sd card
 		
 			{sign1=0;sign2=0;sign3=0;sign4=0;sign5=0;sign6=0;i=0;sign7=0;sign8=1;sign9=0;sign10=0;sign11=0;}
 			

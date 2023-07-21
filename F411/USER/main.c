@@ -4,6 +4,7 @@
 #include "malloc.h" 
 #include "sdio_sdcard.h"  
 #include "spi.h"
+#include "stm32f4xx.h"
 //ALIENTEK 探索者STM32F407开发板 实验38
 //SD卡 实验 -库函数版本
 //技术支持：www.openedv.com
@@ -26,42 +27,69 @@
 				 u16 delay_time = 100;
 				 u8 first_acquire_circle = 0;
 				 u8 first_test_sd = 0;
-
+				 
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
 				 extern u16 SPI_TX_BUFFER_2[32];
 				 extern u16 SPI_TX_intan[5]; //AScii intan
-
+					uint8_t temp_random[512] = {0}; //random code write to sd for indicate where store begin and finish
+					uint8_t tmpbuf1[66*256];  // for sd card store
          volatile long int block_num=100;
 
 
 
+
+// Global variable to store the seed value
+volatile uint32_t seed = 0;
+
+void TIM2_Init(void) {
+    // Enable the clock for TIM2
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+    // Set the timer prescaler and period
+    // For example, to achieve a 1 ms tick with a 16 MHz timer clock:
+    TIM2->PSC = 15999; // Prescaler (16 MHz / (15999 + 1) = 1000 Hz)
+    TIM2->ARR = 999;   // Auto-reload value (1 ms - 1)
+
+    // Enable the update event for TIM2 (this will update the prescaler and period)
+    TIM2->EGR |= TIM_EGR_UG;
+
+    // Start the timer
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+// Function to initialize the seed using a timer count or any other method
+void InitSeed() {
+    // Replace "TIMx" with the timer instance you want to use for generating the seed
+    seed = TIM2->CNT;
+}
+
+// Function to generate a pseudo-random number using LCG algorithm
+uint32_t Get_Pseudo_Random_Number() {
+    // Constants for LCG algorithm
+    const uint32_t LCG_MULTIPLIER = 1103515245;
+    const uint32_t LCG_INCREMENT = 12345;
+    const uint32_t LCG_MODULUS = 0x80000000;
+
+    // Update seed with LCG algorithm
+    seed = (LCG_MULTIPLIER * seed + LCG_INCREMENT) % LCG_MODULUS;
+
+    return seed;
+}
+
 int main(void)
-{        
-			 
-	int cnt=0;
+{ 
+	uint16_t sdtemp_cnt=0;		 
 	int count_bluetooth = 0;
 	u8 t=0;	
 	u8 *buf;
-  uint16_t tmpbuf1[4096];
 	uint16_t tmpbuf2[32]; // for bluetooth send 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(96);  //初始化延时函数
 	uart_init(1000000);		//初始化串口波特率为115200
 	SPI1_Init(0x0000); 
+	TIM2_Init();
 	delay_ms(1000); // delay for ble to connect automatically
-	//Usart_SendHalfWord(USART6,0x1234); // log
-	
-	my_mem_init(SRAMIN);		//初始化内部内存池 
-	//my_mem_init(SRAMCCM);		//初始化CCM内存池
-		
-	//delay_ms(1000);
-	while(SD_Init())//检测不到SD卡
-	{
-		//Usart_SendHalfWord(USART6,0x1122);
-		delay_ms(500);
-		NVIC_SystemReset();  //reset 
-	}	
 	
 	while(1)
 	{
@@ -101,6 +129,7 @@ int main(void)
 			
 			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));						
 		}
+/********************************32 channel send to pc with verification****************************************/
 		 if(sign6)
 		{
 			
@@ -155,40 +184,99 @@ int main(void)
 			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
 		}
 	  }
-			
+/********************************finish store sd card****************************************/			
 		 if(sign8)
 		{
-			
-			SPI_CS_LOW();
-			
-			SPI_SendHalfWord(SPI_TX_BUFFER[34]);
-
-			SPI_CS_HIGH();
-			
-			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));						
-		}
-		if(sign9)
-		{			
-	    for (i=0;i<35;i++)
-		 {
-					
-			SPI_CS_LOW();
- 
-			SPI_SendHalfWord(SPI_TX_BUFFER[i]);
-
-			SPI_CS_HIGH();
-			
-			tmpbuf1[cnt] = SPI_I2S_ReceiveData(SPI1);
-			//Usart_SendHalfWord(USART6,tmpbuf1[cnt]);
-
-			cnt++;
-			if(cnt == 4096)
+			uint8_t i2;
+			temp_random[4] = 0x56;
+			temp_random[5] = 0x78;
+			SD_WriteDisk((u8*)temp_random,block_num,1);
+			for(i2=0;i2<6;i2++)
 			{
-				SD_WriteDisk((u8*)tmpbuf1,block_num,16);
-				block_num = block_num+16;			
-				cnt=0;
+				USART_SendData(USART6,temp_random[i2]);	
+				while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
 			}
-		 }
+			sign8 = 0;
+			sign9 = 0;
+			
+		}
+/********************************store sd card****************************************/							
+		if(sign9)
+		{
+			uint16_t spi_16;
+		/****************if first call***************************/	
+			if(first_test_sd)
+			{
+			  uint32_t randomValue;
+				uint8_t temp_8;
+				uint8_t i1;
+				while(SD_Init())//检测不到SD卡
+				{
+					//Usart_SendHalfWord(USART6,0x1122);
+					delay_ms(500);
+					NVIC_SystemReset();  //reset 
+				}
+		/****************discard first two command****************************/
+				SPI_CS_LOW();
+				SPI_SendHalfWord(CONVERT0);
+				SPI_CS_HIGH();
+				SPI_CS_LOW();
+				SPI_SendHalfWord(CONVERT1);
+				SPI_CS_HIGH();
+		/****************generate random word****************************/		
+				// Generate and use a random number
+				InitSeed();
+				randomValue = Get_Pseudo_Random_Number();
+				// Use the randomValue as needed
+					/* 取出高八位 */
+				temp_8 = (randomValue&0XFF000000)>>24;
+				temp_random[0] = temp_8;
+				/* 取出低八位 */
+				temp_8 = (randomValue&0X00FF0000)>>16;
+				temp_random[1] = temp_8;
+				temp_8 = (randomValue&0X0000FF00)>>8;
+				temp_random[2] = temp_8;
+				temp_8 = randomValue&0X000000FF;
+				temp_random[3] = temp_8;
+				temp_random[4] = 0x12;
+				temp_random[5] = 0x34;
+		/****************random word write sd****************************/		
+				SD_WriteDisk((u8*)temp_random,100,1);
+				block_num = 101;
+		/****************random word send to PC****************************/				
+				for(i1=0;i1<6;i1++)
+				{
+					USART_SendData(USART6,temp_random[i1]);	
+					while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
+				}
+				first_test_sd = 0;
+				sdtemp_cnt = 0;
+			}
+				/****************cycle call*********************/		
+	    for (i=0;i<32;i++)
+			{
+						
+				SPI_CS_LOW();
+	 
+				SPI_SendHalfWord(SPI_TX_BUFFER_2[i]);
+
+				SPI_CS_HIGH();
+				
+				spi_16 = SPI_I2S_ReceiveData(SPI1);
+				tmpbuf1[sdtemp_cnt] = spi_16&0XFF00>>8;
+				tmpbuf1[sdtemp_cnt+1] = spi_16&0X00FF;
+				sdtemp_cnt+=2;
+			}
+			tmpbuf1[sdtemp_cnt] = 0x12; // indicate a record cycle
+			tmpbuf1[sdtemp_cnt+1] = 0x34; // indicate a record cycle
+			sdtemp_cnt+=2;
+			if(sdtemp_cnt == 66*256)
+			{
+				SD_WriteDisk((u8*)tmpbuf1,block_num,33);  // 
+				block_num = block_num+33;			
+				sdtemp_cnt=0;
+			}
+
 		}
 		
 	if(sign10)  // add intan character send function
@@ -210,14 +298,14 @@ int main(void)
 			uint16_t m = 0;
 			for(m = 0; m < 65535; m++)
 			{
-				//tmpbuf1[cnt] = m;
+				//tmpbuf1[sdtemp_cnt] = m;
 				Usart_SendHalfWord(USART6, m);
-				//cnt++;
-				//if(cnt == 4096)
+				//sdtemp_cnt++;
+				//if(sdtemp_cnt == 4096)
 				//{
 					//SD_WriteDisk((u8*)tmpbuf1,block_num,16);
 					//block_num = block_num+16;			
-					//cnt=0;
+					//sdtemp_cnt=0;
 				//}
 			}
 				
