@@ -34,7 +34,7 @@
 				 extern u16 SPI_TX_intan[5]; //AScii intan
 					uint8_t temp_random[512] = {0}; //random code write to sd for indicate where store begin and finish
 					uint8_t tmpbuf1[66*256];  // for sd card store
-         volatile long int block_num=100;
+         volatile u32 block_num=32768;  // must >= 32768, winhex can export it
 
 
 
@@ -81,6 +81,7 @@ int main(void)
 { 
 	uint16_t sdtemp_cnt=0;		 
 	int count_bluetooth = 0;
+	u8 sd_status = 0;
 	u8 t=0;	
 	u8 *buf;
 	uint16_t tmpbuf2[32]; // for bluetooth send 
@@ -174,23 +175,24 @@ int main(void)
 			if(sign7)
 		{
 			for (i=0;i<35;i++)
-		{
-			SPI_CS_LOW();
-			
-			SPI_SendHalfWord(SPI_TX_BUFFER[i]);
+			{
+				SPI_CS_LOW();
+				
+				SPI_SendHalfWord(SPI_TX_BUFFER[i]);
 
-			SPI_CS_HIGH();
-			
-			Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
-		}
+				SPI_CS_HIGH();
+				
+				Usart_SendHalfWord(USART6,SPI_I2S_ReceiveData(SPI1));
+			}
 	  }
 /********************************finish store sd card****************************************/			
 		 if(sign8)
 		{
 			uint8_t i2;
-			temp_random[4] = 0x56;
-			temp_random[5] = 0x78;
-			SD_WriteDisk((u8*)temp_random,block_num,1);
+			temp_random[4] = 0x22;
+			temp_random[5] = 0x22;
+			sd_status += SD_WriteDisk((u8*)temp_random,block_num,1);
+			block_num++;
 			for(i2=0;i2<6;i2++)
 			{
 				USART_SendData(USART6,temp_random[i2]);	
@@ -238,11 +240,12 @@ int main(void)
 				temp_random[2] = temp_8;
 				temp_8 = randomValue&0X000000FF;
 				temp_random[3] = temp_8;
-				temp_random[4] = 0x12;
-				temp_random[5] = 0x34;
-		/****************random word write sd****************************/		
-				SD_WriteDisk((u8*)temp_random,100,1);
-				block_num = 101;
+				temp_random[4] = 0x11;
+				temp_random[5] = 0x11;
+		/****************random word write sd****************************/
+				sd_status += SD_WriteDisk((u8*)temp_random,block_num,1);
+				block_num++;
+				
 		/****************random word send to PC****************************/				
 				for(i1=0;i1<6;i1++)
 				{
@@ -263,7 +266,7 @@ int main(void)
 				SPI_CS_HIGH();
 				
 				spi_16 = SPI_I2S_ReceiveData(SPI1);
-				tmpbuf1[sdtemp_cnt] = spi_16&0XFF00>>8;
+				tmpbuf1[sdtemp_cnt] = (spi_16&0XFF00)>>8;
 				tmpbuf1[sdtemp_cnt+1] = spi_16&0X00FF;
 				sdtemp_cnt+=2;
 			}
@@ -272,11 +275,10 @@ int main(void)
 			sdtemp_cnt+=2;
 			if(sdtemp_cnt == 66*256)
 			{
-				SD_WriteDisk((u8*)tmpbuf1,block_num,33);  // 
+				sd_status += SD_WriteDisk((u8*)tmpbuf1,block_num,33);  // 
 				block_num = block_num+33;			
 				sdtemp_cnt=0;
 			}
-
 		}
 		
 	if(sign10)  // add intan character send function

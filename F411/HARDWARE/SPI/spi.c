@@ -170,7 +170,14 @@ void SPI1_Init(u16 x)
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x881e);
+	  SPI_SendHalfWord(0x8816);
+	
+		delay_us( 50 );SPI_CS_HIGH();
+		
+		delay_us( 500 );
+		SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x8816);
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
@@ -179,7 +186,7 @@ void SPI1_Init(u16 x)
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x8985);
+	  SPI_SendHalfWord(0x8980);
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
@@ -187,7 +194,7 @@ void SPI1_Init(u16 x)
 		
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x8985);
+	  SPI_SendHalfWord(0x8980);
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
@@ -196,7 +203,7 @@ void SPI1_Init(u16 x)
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x8a2b);
+	  SPI_SendHalfWord(0x8a97);
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
@@ -205,7 +212,7 @@ void SPI1_Init(u16 x)
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x8b86);
+	  SPI_SendHalfWord(0x8b80);
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
