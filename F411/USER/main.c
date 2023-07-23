@@ -35,7 +35,8 @@
 					uint8_t temp_random[512] = {0}; //random code write to sd for indicate where store begin and finish
 					uint8_t tmpbuf1[66*256];  // for sd card store
          volatile u32 block_num=32768;  // must >= 32768, winhex can export it
-
+				 extern SD_Error TransferError;
+				 extern u8 TransferEnd;
 
 
 
@@ -258,7 +259,7 @@ int main(void)
 				first_test_sd = 0;
 				sdtemp_cnt = 0;
 			}
-				/****************cycle call*********************/		
+/****************************cycle call*********************/		
 	    for (i=0;i<32;i++)
 			{
 						
@@ -278,9 +279,32 @@ int main(void)
 			sdtemp_cnt+=2;
 			if(sdtemp_cnt == 66*256)
 			{
-				sd_status += SD_WriteDisk((u8*)tmpbuf1,block_num,33);  // 
-				block_num = block_num+33;			
-				sdtemp_cnt=0;
+							u32 timeout = SDIO_DATATIMEOUT;
+							SD_Error errorstatus = SD_OK;
+							u8 cardstate = 0;
+			/*******************************等待上一次DMA传输完成 ***************************************/
+							while(((DMA2->LISR&(1<<27))==RESET)&&timeout)timeout--;//等待传输完成 
+							if(timeout==0)	 								//超时
+							{									  
+									SD_Init();	 					//重新初始化SD卡,可以解决写入死机的问题
+								return SD_DATA_TIMEOUT;			//超时	 
+							}
+							timeout=SDIO_DATATIMEOUT;
+							while((TransferEnd==0)&&(TransferError==SD_OK)&&timeout)timeout--;
+							if(timeout==0)return SD_DATA_TIMEOUT;			//超时	 
+							if(TransferError!=SD_OK)return TransferError;	
+			/*******************************清除所有sd标记 ***************************************/		
+							SDIO_ClearFlag(SDIO_STATIC_FLAGS);//清除所有标记
+							errorstatus=IsCardProgramming(&cardstate);
+							while((errorstatus==SD_OK)&&((cardstate==SD_CARD_PROGRAMMING)||(cardstate==SD_CARD_RECEIVING)))
+							{
+								errorstatus=IsCardProgramming(&cardstate);
+							}
+						
+			/*******************************start sd DMA with no wait***************************************/			
+							SD_WriteDisk_nowait((u8*)tmpbuf1,block_num,33);
+							block_num = block_num+33;
+							sdtemp_cnt=0;					
 			}
 		}
 		
