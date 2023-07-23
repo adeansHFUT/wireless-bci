@@ -191,9 +191,13 @@ int main(void)
 			uint8_t i2;
 			temp_random[4] = 0x22;
 			temp_random[5] = 0x22;
+			temp_random[6] = (block_num&0XFF000000)>>24;
+			temp_random[7] = (block_num&0X00FF0000)>>16;
+			temp_random[8] = (block_num&0X0000FF00)>>8;
+			temp_random[9] = block_num&0X000000FF;
 			sd_status += SD_WriteDisk((u8*)temp_random,block_num,1);
 			block_num++;
-			for(i2=0;i2<6;i2++)
+			for(i2=0;i2<10;i2++)
 			{
 				USART_SendData(USART6,temp_random[i2]);	
 				while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
@@ -231,23 +235,22 @@ int main(void)
 				randomValue = Get_Pseudo_Random_Number();
 				// Use the randomValue as needed
 					/* 取出高八位 */
-				temp_8 = (randomValue&0XFF000000)>>24;
-				temp_random[0] = temp_8;
-				/* 取出低八位 */
-				temp_8 = (randomValue&0X00FF0000)>>16;
-				temp_random[1] = temp_8;
-				temp_8 = (randomValue&0X0000FF00)>>8;
-				temp_random[2] = temp_8;
-				temp_8 = randomValue&0X000000FF;
-				temp_random[3] = temp_8;
+				temp_random[0] = (randomValue&0XFF000000)>>24;
+				temp_random[1] = (randomValue&0X00FF0000)>>16;
+				temp_random[2] = (randomValue&0X0000FF00)>>8;
+				temp_random[3] = randomValue&0X000000FF;
 				temp_random[4] = 0x11;
 				temp_random[5] = 0x11;
+				temp_random[6] = (block_num&0XFF000000)>>24;
+				temp_random[7] = (block_num&0X00FF0000)>>16;
+				temp_random[8] = (block_num&0X0000FF00)>>8;
+				temp_random[9] = block_num&0X000000FF;
 		/****************random word write sd****************************/
 				sd_status += SD_WriteDisk((u8*)temp_random,block_num,1);
 				block_num++;
 				
 		/****************random word send to PC****************************/				
-				for(i1=0;i1<6;i1++)
+				for(i1=0;i1<10;i1++)
 				{
 					USART_SendData(USART6,temp_random[i1]);	
 					while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
