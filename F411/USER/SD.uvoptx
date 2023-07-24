@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>250</LineNumber>
+          <LineNumber>281</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219124</Address>
+          <Address>134219302</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,14 +163,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>D:\OneDrive - mail.hfut.edu.cn\PC_synch\SIAT-LAB\Projects\C-wifi钃濈墮閲囬泦鎺у埗\A-wireless-bci-pc open\F411\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\\main.c\250</Expression>
+          <Expression>\\SD\main.c\281</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>251</LineNumber>
+          <LineNumber>268</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219142</Address>
+          <Address>134219214</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -179,12 +179,28 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>D:\OneDrive - mail.hfut.edu.cn\PC_synch\SIAT-LAB\Projects\C-wifi钃濈墮閲囬泦鎺у埗\A-wireless-bci-pc open\F411\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\\main.c\251</Expression>
+          <Expression>\\SD\main.c\268</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>1378</LineNumber>
+          <LineNumber>268</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134219284</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\OneDrive - mail.hfut.edu.cn\PC_synch\SIAT-LAB\Projects\C-wifi钃濈墮閲囬泦鎺у埗\A-wireless-bci-pc open\F411\USER\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\\main.c\268</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>266</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -193,7 +209,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>..\HARDWARE\SDIO\sdio_sdcard.c</Filename>
+          <Filename>.\main.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -212,7 +228,7 @@
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>((TIM_TypeDef *) (((uint32_t)0x40000000) + 0x0000))-&gt;CNT</ItemText>
+          <ItemText>((TIM_TypeDef *) (((uint32_t)0x40000000) + 0x0000))-&gt;CNT,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
@@ -234,12 +250,62 @@
           <WinNumber>1</WinNumber>
           <ItemText>tmpbuf1</ItemText>
         </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>sd_dma_num</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>tmpbuf_sd[0]</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
           <ItemText>ratest</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>SPI1-&gt;SR</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>tmpbuf_sd</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time1,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time2,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time3,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time4,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time5,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>time6,0x0A</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>
@@ -348,7 +414,7 @@
       <GroupNumber>2</GroupNumber>
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\HARDWARE\SDIO\sdio_sdcard.c</PathWithFileName>

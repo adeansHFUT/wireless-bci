@@ -27,13 +27,14 @@
 				 u16 delay_time = 100;
 				 u8 first_acquire_circle = 0;
 				 u8 first_test_sd = 0;
+				 u8 sd_dma_num;
 				 
 		     extern u16 SPI_RX_BUFFER[1];	
          extern u16 SPI_TX_BUFFER[35];
 				 extern u16 SPI_TX_BUFFER_2[32];
 				 extern u16 SPI_TX_intan[5]; //AScii intan
 					uint8_t temp_random[512] = {0}; //random code write to sd for indicate where store begin and finish
-					uint8_t tmpbuf1[66*256];  // for sd card store
+					uint8_t tmpbuf_sd[2][512] = {0};;  // for sd card store
          volatile u32 block_num=32768;  // must >= 32768, winhex can export it
 				 extern SD_Error TransferError;
 				 extern u8 TransferEnd;
@@ -49,8 +50,8 @@ void TIM2_Init(void) {
 
     // Set the timer prescaler and period
     // For example, to achieve a 1 ms tick with a 16 MHz timer clock:
-    TIM2->PSC = 15999; // Prescaler (16 MHz / (15999 + 1) = 1000 Hz)
-    TIM2->ARR = 999;   // Auto-reload value (1 ms - 1)
+    TIM2->PSC = 48; // Prescaler (48 MHz / 48 = 1MHz)
+    TIM2->ARR = 999999;   // Auto-reload value (1s)
 
     // Enable the update event for TIM2 (this will update the prescaler and period)
     TIM2->EGR |= TIM_EGR_UG;
@@ -60,9 +61,10 @@ void TIM2_Init(void) {
 }
 
 // Function to initialize the seed using a timer count or any other method
-void InitSeed() {
+uint32_t InitSeed() {
     // Replace "TIMx" with the timer instance you want to use for generating the seed
     seed = TIM2->CNT;
+	  return seed;
 }
 
 // Function to generate a pseudo-random number using LCG algorithm
@@ -92,7 +94,7 @@ int main(void)
 	SPI1_Init(0x0000); 
 	TIM2_Init();
 	delay_ms(1000); // delay for ble to connect automatically
-	
+
 	while(1)
 	{
      if(sign1)
@@ -258,26 +260,26 @@ int main(void)
 				}
 				first_test_sd = 0;
 				sdtemp_cnt = 0;
+				sd_dma_num = 0;
 			}
-/****************************cycle call*********************/		
+/****************************cycle call*********************/	
 	    for (i=0;i<32;i++)
 			{
 						
 				SPI_CS_LOW();
 	 
-				SPI_SendHalfWord(SPI_TX_BUFFER_2[i]);
+				spi_16 = SPI_SendHalfWord(SPI_TX_BUFFER_2[i]);
 
 				SPI_CS_HIGH();
-				
-				spi_16 = SPI_I2S_ReceiveData(SPI1);
-				tmpbuf1[sdtemp_cnt] = (spi_16&0XFF00)>>8;
-				tmpbuf1[sdtemp_cnt+1] = spi_16&0X00FF;
+	
+				tmpbuf_sd[sd_dma_num][sdtemp_cnt] = (spi_16&0XFF00)>>8;
+				tmpbuf_sd[sd_dma_num][sdtemp_cnt+1] = spi_16&0X00FF;
 				sdtemp_cnt+=2;
 			}
-			tmpbuf1[sdtemp_cnt] = 0x12; // indicate a record cycle
-			tmpbuf1[sdtemp_cnt+1] = 0x34; // indicate a record cycle
+			tmpbuf_sd[sd_dma_num][sdtemp_cnt] = 0x12; // indicate a record cycle
+			tmpbuf_sd[sd_dma_num][sdtemp_cnt+1] = 0x34; // indicate a record cycle
 			sdtemp_cnt+=2;
-			if(sdtemp_cnt == 66*256)
+			if(sdtemp_cnt == 66*7)
 			{
 							u32 timeout = SDIO_DATATIMEOUT;
 							SD_Error errorstatus = SD_OK;
@@ -293,18 +295,18 @@ int main(void)
 							while((TransferEnd==0)&&(TransferError==SD_OK)&&timeout)timeout--;
 							if(timeout==0)return SD_DATA_TIMEOUT;			//超时	 
 							if(TransferError!=SD_OK)return TransferError;	
-			/*******************************清除所有sd标记 ***************************************/		
+			/*******************************清除所有sd标记 ***************************************/					
 							SDIO_ClearFlag(SDIO_STATIC_FLAGS);//清除所有标记
 							errorstatus=IsCardProgramming(&cardstate);
 							while((errorstatus==SD_OK)&&((cardstate==SD_CARD_PROGRAMMING)||(cardstate==SD_CARD_RECEIVING)))
 							{
 								errorstatus=IsCardProgramming(&cardstate);
 							}
-						
 			/*******************************start sd DMA with no wait***************************************/			
-							SD_WriteDisk_nowait((u8*)tmpbuf1,block_num,33);
-							block_num = block_num+33;
-							sdtemp_cnt=0;					
+							SD_WriteDisk_nowait((u8*)&tmpbuf_sd[sd_dma_num][0],block_num,1);
+							block_num = block_num+1;
+							sdtemp_cnt=0;
+							sd_dma_num = (sd_dma_num+1)%2;  // switch DMA mem
 			}
 		}
 		
@@ -327,12 +329,12 @@ int main(void)
 			uint16_t m = 0;
 			for(m = 0; m < 65535; m++)
 			{
-				//tmpbuf1[sdtemp_cnt] = m;
+				//tmpbuf_sd[sdtemp_cnt] = m;
 				Usart_SendHalfWord(USART6, m);
 				//sdtemp_cnt++;
 				//if(sdtemp_cnt == 4096)
 				//{
-					//SD_WriteDisk((u8*)tmpbuf1,block_num,16);
+					//SD_WriteDisk((u8*)tmpbuf_sd,block_num,16);
 					//block_num = block_num+16;			
 					//sdtemp_cnt=0;
 				//}
