@@ -371,14 +371,17 @@ void SPI1_Init(u16 x)
 //返回值:读取到的字节
 u16 SPI_SendHalfWord(u16 HalfWord)
 {		 			 
- 
-  while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET){}//等待发送区空  
-	
-	SPI_I2S_SendData(SPI1, HalfWord); //通过外设SPIx发送一个byte  数据
+  /* Loop while DR register in not emplty */
+  while ((SPI1->SR & SPI_I2S_FLAG_TXE) == RESET){}
+
+  /* Send Half Word through the FLASH_SPI peripheral */
+	SPI1->DR = HalfWord;
+//  SPI_I2S_SendData(SPI1, HalfWord);
+
+  /* Wait to receive a Half Word */
+  while ((SPI1->SR & SPI_I2S_FLAG_RXNE) == RESET){}
 		
-  while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET){} //等待接收完一个byte  
- 
-	return SPI_I2S_ReceiveData(SPI1); //返回通过SPIx最近接收的数据	
+  return SPI1->DR;
  		    
 }
 

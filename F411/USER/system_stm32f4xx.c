@@ -326,7 +326,7 @@
 #define PLL_Q      8
 
 #if defined (STM32F40_41xxx)
-#define PLL_N      192
+#define PLL_N      200
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
 #endif /* STM32F40_41xxx */
@@ -344,7 +344,7 @@
 #endif /* STM32F401xx */
 
 #if defined (STM32F411xE)
-#define PLL_N      192
+#define PLL_N      200
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2   
 #endif /* STM32F411xx */
