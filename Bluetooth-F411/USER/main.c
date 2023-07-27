@@ -201,7 +201,13 @@ int main(void)
 			temp_random[9] = block_num&0X000000FF;
 			delay_ms(500);  // wait until last sd store finish
 			//SD_PowerOFF();
-			SD_Init();	
+			while(SD_Init())//检测不到SD卡
+			{
+					Usart_SendHalfWord(USART6,0x9999);
+					Usart_SendHalfWord(USART6,0x9999);
+					delay_ms(250);
+					//NVIC_SystemReset();  //reset 
+			}	
 			sd_status += SD_WriteDisk((u8*)temp_random,block_num,1);
 			delay_ms(100);
 			block_num++;
@@ -225,9 +231,10 @@ int main(void)
 				uint8_t i1;
 				while(SD_Init())//检测不到SD卡
 				{
-					//Usart_SendHalfWord(USART6,0x1122);
-					delay_ms(500);
-					NVIC_SystemReset();  //reset 
+					Usart_SendHalfWord(USART6,0x9999);
+					Usart_SendHalfWord(USART6,0x9999);
+					delay_ms(250);
+					//NVIC_SystemReset();  //reset 
 				}
 		/****************discard first two command****************************/
 				SPI_CS_LOW();

@@ -43,7 +43,7 @@ extern SPI_HandleTypeDef hspi2;
 uint8_t first_acquire_circle = 0;
 uint16_t rev_word;
 uint8_t SPI_RX_BUFFER[1452]; //定义接收数据的缓冲区  < 1460  (66*22=1452)
-uint8_t SPI_test[1452*20];
+uint8_t wifi_test_array[1452*20];
 void M8266WIFI_Test(void)
 {
 	 extern uint16_t status;
@@ -214,10 +214,11 @@ void M8266WIFI_Test(void)
 	 volatile u32 sent = 0;
    volatile u32 total_sent = 0, MBytes = 0; 
 	 volatile u8 debug_point;
+/***************************INTAN ascii test****************************************/
 	 for(m=0; m<7; m++)
 	 {
 		SPI2_CS_LOW();
-		rec_intan[m] = SPI_SendHalfWord(&hspi2,SPI_TX_intan[m]);  // test SPI2 baud is ok for INTAN accquire
+		rec_intan[m] = SPI_SendHalfWord(&hspi2,SPI_TX_intan[m]);  // test SPI2 baud is ok for INTAN sample
 	  SPI2_CS_HIGH();
 	 }
 	 if(rec_intan[2]==0x0049&&rec_intan[3]==0x004E&&rec_intan[4]==0x0054&&rec_intan[5]==0x0041&&rec_intan[6]==0x004E)
@@ -227,21 +228,21 @@ void M8266WIFI_Test(void)
 		 //while(1);// write flash
 		 NVIC_SystemReset();  // reset MCU
 	 }
-	  for(j=0;j<22;j++)
-					 {
-						 for (i=0;i<32;i++)
-							{		
+	/*****************************prepare wifi test data********************************/		
+		for(j=0;j<22;j++)
+		{
+			 for (i=0;i<32;i++)
+				{		
+					 rev_word = 0x1111;
 
-								 rev_word = 0x1111;
-
-								 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
-								 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
-							}
-							SPI_RX_BUFFER[66*j+64] = 0x12;
-							SPI_RX_BUFFER[66*j+65] = 0x34;
-				    }
+					 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
+					 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
+				}
+				SPI_RX_BUFFER[66*j+64] = 0x12;
+				SPI_RX_BUFFER[66*j+65] = 0x34;
+		}
 	 for(i=0; i<20;i++)
-		memcpy(&SPI_test[1452*i], SPI_RX_BUFFER,1452);
+		memcpy(&wifi_test_array[1452*i], SPI_RX_BUFFER,1452);
 	 while(1)
 	 {
 		/*****************************handle receive data situation*************************************************/			
@@ -250,121 +251,95 @@ void M8266WIFI_Test(void)
 						handle_receive();
 						maybe_receive = 0;
 				}		
-		/*****************************handle send data situation*************************************************/
-				 if(receive_sign == 1)  //采样32通道
+		/*****************************sample 32 channel and send*************************************************/
+			 if(receive_sign == 1)  //采样32通道
+			 {
+				 if(first_acquire_circle)  // discard the first two words 
 				 {
-					 
-					 if(first_acquire_circle)  // discard the first two words 
-					 {
-							SPI2_CS_LOW();
-							SPI_SendHalfWord(&hspi2,CONVERT0);
-							SPI2_CS_HIGH();
-							SPI2_CS_LOW();
-							SPI_SendHalfWord(&hspi2,CONVERT1);
-							SPI2_CS_HIGH();
-							first_acquire_circle = 0;
-					 }
-					 
-					 for(j=0;j<22;j++)
-					 {
-						 for (i=0;i<32;i++)
-							{		
-								 SPI2_CS_LOW();	
-								 rev_word = SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER_2[i]);
-								 SPI2_CS_HIGH();
-								 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
-								 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
-							}
-							SPI_RX_BUFFER[66*j+64] = 0x12;
-							SPI_RX_BUFFER[66*j+65] = 0x34;
-				    }
-					  M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);	
-						//M8266WIFI_Module_delay_ms(1);	
+						SPI2_CS_LOW();
+						SPI_SendHalfWord(&hspi2,CONVERT0);
+						SPI2_CS_HIGH();
+						SPI2_CS_LOW();
+						SPI_SendHalfWord(&hspi2,CONVERT1);
+						SPI2_CS_HIGH();
+						first_acquire_circle = 0;
+				 }
+				 
+				 for(j=0;j<22;j++)
+				 {
+					 for (i=0;i<32;i++)
+						{		
+							 SPI2_CS_LOW();	
+							 rev_word = SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER_2[i]);
+							 SPI2_CS_HIGH();
+							 SPI_RX_BUFFER[66*j+2*i] = (uint8_t)(rev_word >> 8);  // ensure send squence
+							 SPI_RX_BUFFER[66*j+2*i+1] = (uint8_t)rev_word;							
+						}
+						SPI_RX_BUFFER[66*j+64] = 0x12;
+						SPI_RX_BUFFER[66*j+65] = 0x34;
+					}
+					M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);	
+					//M8266WIFI_Module_delay_ms(1);	
+			}
+				
+			if(receive_sign == 5)
+			{
+				for(m=0; m<726;m++)
+				{
+					SPI2_CS_LOW();
+					rev_word = SPI_SendHalfWord(&hspi2,CONVERT0);
+					SPI2_CS_HIGH();
+					SPI_RX_BUFFER[2*m] = (uint8_t)(rev_word >> 8);  // ensure send squence
+					SPI_RX_BUFFER[2*m+1] = (uint8_t)rev_word;	
+					__nop();
+				}
+				M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
+			}
+  /******************************wifi speed test******************************************/		 
+		 if(receive_sign == 3)  //test acquire rate 
+		 {
+				if(total_sent> 1024*1024)  // watch MBytes*1024*1024+total_sent, which is the count of data module sends, compared with the received count at the reception end, to determin the packet loss etc
+				{                          // (Chinese: 持续发送一段时间后，观察表达式 MBytes*1024*1024+total_sent 的值，和接收端接收到的数据个数进行比较，可以粗略衡量模组的丢包率。)
+					 MBytes++;
+					 total_sent -= 1024*1024;
+				}
+				 
+				 //M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
+				 sent = M8266WIFI_SPI_Send_BlockData((uint8_t *)wifi_test_array, 1452*20, 5000, link_no, NULL, 0,&status);
+				 total_sent += sent;
+				
+				if( (sent==1452*20) && ((status&0xFF)==0x00) ) //Send successfully 
+				{
+				}
+				else if( (status&0xFF) == 0x1E)			       // 0x1E = too many errors ecountered during sending and can not fixed, or transsmission blocked heavily(Chinese: 发送阶段遇到太多的错误或阻塞了，可以考虑加大max_loops)
+				{
+					debug_point = 1;
+					//add some process here (Chinese: 可以在此处加一些处理，比如增加max_loops的值)
+				}
+				else if(  ((status&0xFF) == 0x14)			 // 0x14 = connection of link_no not present (Chinese: 该套接字不存在)
+							 || ((status&0xFF) == 0x15) )    // 0x15 = connection of link_no closed(Chinese: 该套接字已经关闭或断开)			
+				{
+					 debug_point = 2;
+					 //need to re-establish the socket connection (Chinese: 需要重建建立套接字)
+				}
+				else if( (status&0xFF) == 0x18 )        // 0x18 = TCP server in listening states and no tcp clients have connected. (Chinese: 这个TCP服务器还没有客户端连接着它)
+				{
+					 debug_point = 3;
+					 M8266HostIf_delay_us(99);
+				}
+				else
+				{
+					 debug_point = 4;
+					 M8266HostIf_delay_us(101);
 				}
 				
-				if(receive_sign == 5)
-				{
-					for(m=0; m<726;m++)
-					{
-						SPI2_CS_LOW();
-						rev_word = SPI_SendHalfWord(&hspi2,CONVERT0);
-						SPI2_CS_HIGH();
-						SPI_RX_BUFFER[2*m] = (uint8_t)(rev_word >> 8);  // ensure send squence
-						SPI_RX_BUFFER[2*m+1] = (uint8_t)rev_word;	
-						__nop();
-					}
-					M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
-				}
-				 if(receive_sign == 2)  //采样35通道
-				 {
-					while(1)
-					{
-					 int m;
-					for (m=0;m<35;m++)
-		          {
-							 SPI2_CS_LOW();
-					     //SPI_RX_BUFFER[m+80]=SPI_SendHalfWord(&hspi2,SPI_TX_BUFFER[m]);
-			         SPI2_CS_HIGH();
-							 fasong = SPI_RX_BUFFER[m+80];
-					     chucun[0] = (uint8_t)(fasong >> 8); 
-               chucun[1] = (uint8_t)fasong; 	      
-           if(m==32||m==33||m==34)
-					 {
-						 M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);
-						 M8266WIFI_Module_delay_ms(1000);	
-					 }			
-           else
-					 {						 
-                M8266WIFI_SPI_Send_Data((uint8_t *)&chucun, 2, link_no, &status);	
-					      M8266WIFI_Module_delay_ms(10);		
-					 }						 
-					 	}
-					 }
-				 }
-				 if(receive_sign == 3)  //test acquire rate 
-				 {
-						if(total_sent> 1024*1024)  // watch MBytes*1024*1024+total_sent, which is the count of data module sends, compared with the received count at the reception end, to determin the packet loss etc
-						{                          // (Chinese: 持续发送一段时间后，观察表达式 MBytes*1024*1024+total_sent 的值，和接收端接收到的数据个数进行比较，可以粗略衡量模组的丢包率。)
-							 MBytes++;
-							 total_sent -= 1024*1024;
-						}
-						 
-						 //M8266WIFI_SPI_Send_Data((uint8_t *)SPI_RX_BUFFER, 1452, link_no, &status);
-						 sent = M8266WIFI_SPI_Send_BlockData((uint8_t *)SPI_test, 1452*20, 5000, link_no, NULL, 0,&status);
-						 total_sent += sent;
-						
-						if( (sent==1452*20) && ((status&0xFF)==0x00) ) //Send successfully 
-						{
-						}
-						else if( (status&0xFF) == 0x1E)			       // 0x1E = too many errors ecountered during sending and can not fixed, or transsmission blocked heavily(Chinese: 发送阶段遇到太多的错误或阻塞了，可以考虑加大max_loops)
-						{
-							debug_point = 1;
-							//add some process here (Chinese: 可以在此处加一些处理，比如增加max_loops的值)
-						}
-						else if(  ((status&0xFF) == 0x14)			 // 0x14 = connection of link_no not present (Chinese: 该套接字不存在)
-									 || ((status&0xFF) == 0x15) )    // 0x15 = connection of link_no closed(Chinese: 该套接字已经关闭或断开)			
-						{
-							 debug_point = 2;
-							 //need to re-establish the socket connection (Chinese: 需要重建建立套接字)
-						}
-						else if( (status&0xFF) == 0x18 )        // 0x18 = TCP server in listening states and no tcp clients have connected. (Chinese: 这个TCP服务器还没有客户端连接着它)
-						{
-							 debug_point = 3;
-							 M8266HostIf_delay_us(99);
-						}
-						else
-						{
-							 debug_point = 4;
-							 M8266HostIf_delay_us(101);
-						}
-						
-				 }				 	 		
- 
-				 if(receive_sign == 4)
-				 {
-					 M8266WIFI_SPI_Send_Data((uint8_t *)&SPI_RX_BUFFER[4], 10, link_no, &status);
-					 receive_sign =0;
-				 }
+		 }				 	 		
+
+		 if(receive_sign == 4)
+		 {
+			 M8266WIFI_SPI_Send_Data((uint8_t *)&SPI_RX_BUFFER[4], 10, link_no, &status);
+			 receive_sign =0;
+		 }
 		}//if 0
 } //while end of
 }

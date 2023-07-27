@@ -1,4 +1,5 @@
 Bluetooth-F411/OBJ
 *.o
 Console/sd_data
-M8266WIFI-F407/OUTPUT
+M8266WIFI-F407_HAL/OUTPUT
+
