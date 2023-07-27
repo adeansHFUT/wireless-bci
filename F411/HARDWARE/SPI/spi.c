@@ -91,7 +91,17 @@ void SPI1_Init(u16 x)
 		
 	   delay_us( 84000 );
 	 
-	 /* 初始化芯片配置寄存器0：ADC配置和放大器快速建立 */
+/* ?????????? */
+	
+	   SPI_CS_LOW(); delay_us( 50 );
+	 
+	   SPI_SendHalfWord(0x80fe);
+	
+     delay_us( 50 );SPI_CS_HIGH();
+		
+	   delay_us( 84000 );
+	 
+	 /* ??????????0:ADC?????????? */
 	 	SPI_CS_LOW(); delay_us( 50 );
 	 
 	  SPI_SendHalfWord(0x80de);
@@ -100,7 +110,7 @@ void SPI1_Init(u16 x)
 		
 		delay_us( 500 );
 		
-	 	/* 初始化芯片配置寄存器1：传感器采样和ADC缓冲器偏置电流设置 */
+	 	/* ??????????1:??????ADC????????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -109,7 +119,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-		/* 初始化芯片配置寄存器2：传感器采样和ADC缓冲器偏置电流设置 */
+		/* ??????????2:??????ADC????????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -118,7 +128,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 	
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器3：温度传感器和辅助数字输出设置 */
+	 	/* ??????????3:?????????????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -128,17 +138,25 @@ void SPI1_Init(u16 x)
 		
     delay_us( 500 );
 	
-	 	/* 初始化芯片配置寄存器4：ADC输出格式和DSP失调消除设置 */
+	 	/* ??????????4:ADC?????DSP?????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
-	  SPI_SendHalfWord(0x8480);
+	  SPI_SendHalfWord(0x849c);
 
 		delay_us( 50 );SPI_CS_HIGH();
 		
     delay_us( 500 );
 		
-	 	/* 初始化芯片配置寄存器5：阻抗检测控制（未开启）设置 */
+		SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x849c);
+
+		delay_us( 50 );SPI_CS_HIGH();
+		
+    delay_us( 500 );
+		
+	 	/* ??????????5:??????(???)?? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -147,7 +165,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器6：寄存器5的DAC设置（置零）设置 */
+	 	/* ??????????6:???5?DAC??(??)?? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -157,7 +175,7 @@ void SPI1_Init(u16 x)
 		
 		delay_us( 500 );
 		
-	 	/* 初始化芯片配置寄存器7：同上置零设置 */
+	 	/* ??????????7:?????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -166,7 +184,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器8：放大器带宽设置 */
+	 	/* ??????????8:??????? *///7.5khz
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -175,6 +193,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
+		
 		SPI_CS_LOW(); delay_us( 50 );
 	 
 	  SPI_SendHalfWord(0x8816);
@@ -182,7 +201,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器9：放大器带宽设置 */
+	 	/* ??????????9:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -199,7 +218,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器10：放大器带宽设置 */
+	 	/* ??????????10:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -208,7 +227,15 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器11：放大器带宽设置 */
+		
+		SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x8a97);
+	
+		delay_us( 50 );SPI_CS_HIGH();
+		
+		delay_us( 500 );
+	 	/* ??????????11:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -217,8 +244,16 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
+		
+		SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x8b80);
+	
+		delay_us( 50 );SPI_CS_HIGH();
+		
+		delay_us( 500 );
 
-	 	/* 初始化芯片配置寄存器12：放大器带宽设置 */
+	 	/* ??????????12:???????7.5khz */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -226,9 +261,17 @@ void SPI1_Init(u16 x)
 	
 		delay_us( 50 );SPI_CS_HIGH();
 		
-		delay_us( 500 );	
+		delay_us( 500 );
+
+	  SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x8c10);
+	
+		delay_us( 50 );SPI_CS_HIGH();
+		
+		delay_us( 500 );
 						
-	 	/* 初始化芯片配置寄存器13：放大器带宽设置 */
+	 	/* ??????????13:?????????0.1hz */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -237,7 +280,15 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器14：放大器启动设置 */
+		
+		SPI_CS_LOW(); delay_us( 50 );
+	 
+	  SPI_SendHalfWord(0x8dfc);
+	
+		delay_us( 50 );SPI_CS_HIGH();
+		
+		delay_us( 500 );
+	 	/* ??????????14:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -246,7 +297,7 @@ void SPI1_Init(u16 x)
 		delay_us( 50 );SPI_CS_HIGH();
 		
 		delay_us( 500 );
-	 	/* 初始化芯片配置寄存器15：放大器启动设置 */
+	 	/* ??????????15:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -256,7 +307,7 @@ void SPI1_Init(u16 x)
 		
 		delay_us( 500 );
 		
-	 	/* 初始化芯片配置寄存器16：放大器启动设置 */
+	 	/* ??????????16:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 
@@ -266,7 +317,7 @@ void SPI1_Init(u16 x)
 		
 		delay_us( 500 );
 		
-	 	/* 初始化芯片配置寄存器17：放大器启动设置 */
+	 	/* ??????????17:??????? */
 	 
 	  SPI_CS_LOW(); delay_us( 50 );
 	 

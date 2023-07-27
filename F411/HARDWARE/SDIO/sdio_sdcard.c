@@ -83,14 +83,14 @@ SD_Error SD_Init(void)
 	
   GPIO_InitStructure.GPIO_Pin =GPIO_Pin_8|GPIO_Pin_9; 	//PC8,9,10,11,12复用功能输出	
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//100M
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100M
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
   GPIO_Init(GPIOA, &GPIO_InitStructure);// PC8,9,10,11,12复用功能输出
 	
 	GPIO_InitStructure.GPIO_Pin =GPIO_Pin_5|GPIO_Pin_7|GPIO_Pin_15; 	//PC8,9,10,11,12复用功能输出	
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//100M
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100M
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
   GPIO_Init(GPIOB, &GPIO_InitStructure);// PC8,9,10,11,12复用功能输出
